@@ -28,7 +28,7 @@ with app.app_context():
     db.create_all()
 
 api = Api(app,title="libraty management API",doc="/swagger") 
-api.add_namespace(auth_routes)
+api.add_namespace(auth_routes, path="/auth")
 api.add_namespace(member_routes)
 api.add_namespace(book_routes)
 api.add_namespace(transaction_routes)
