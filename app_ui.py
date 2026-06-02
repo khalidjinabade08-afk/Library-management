@@ -1,11 +1,8 @@
 import streamlit as st
-import base64
-import requests 
-import pandas as pd
-import os
+import requests
 
 base_url = "http://127.0.0.1:5501"
-
+auth_url = f"{base_url}/auth"
 st.set_page_config(page_title="Library Management System", layout="wide")
 
 def init_session():
@@ -17,7 +14,7 @@ def init_session():
 def login_user(username, password):
     try:
         response = requests.post(
-            f"{base_url}/login", json={"username": username, "password": password}
+            f"{auth_url}/login", json={"username": username, "password": password}
         )
         if response.status_code == 200:
             st.session_state.authenticated = True
@@ -37,7 +34,7 @@ def register_user(username, name, password, role):
         "role":role
     }
     try:
-        response = requests.post(f"{base_url}/register", json=payload)
+        response = requests.post(f"{auth_url}/register", json=payload)
         
         if response.status_code in [200, 201]:
             st.success("Registration Successful! Please Login.")
@@ -53,7 +50,7 @@ def register_user(username, name, password, role):
 
 def logout():
     st.session_state.authenticated = False
-    st.session_state.user_data = None
+    st.session_state.user_data = {}
     st.rerun()
 
 def auth_page():
