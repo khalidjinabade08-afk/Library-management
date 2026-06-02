@@ -13,6 +13,12 @@ register_model = auth_routes.model("Register",{
     "role":fields.String(required = True, description = "admin/superadmin")
 })
 
+# update role model
+role_update_model = auth_routes.model("UpdateRole", {
+    "username": fields.String(required=True, description="Target username"),
+    "new_role": fields.String(required=True, description="admin or superadmin")
+})
+
 login_model = auth_routes.model("Login",{
     "username":fields.String(required = True, description = "Username"),
     "password":fields.String(required = True, description = "Password")
@@ -28,16 +34,16 @@ password_model = auth_routes.model("change_password",{
 #Register
 @auth_routes.route("/register")
 class Register(Resource):
-    @auth_routes.expect(register_model)
+    @auth_routes.expect(register_model, validate=True)
     def post(self):
         data=request.get_json()
         return register(data)
-    
+
 
 # login
 @auth_routes.route("/login")
 class Login(Resource):
-    @auth_routes.expect(login_model)
+    @auth_routes.expect(login_model, validate=True)
     def post(self):
         data = request.get_json()
         return login(data)
@@ -45,7 +51,7 @@ class Login(Resource):
 # change password
 @auth_routes.route("/change_password")
 class changePassword(Resource):
-    @auth_routes.expect(password_model)
+    @auth_routes.expect(password_model, validate=True)
     @role_required(["superadmin","admin"])
     def put(self):
         data = request.get_json()
@@ -57,3 +63,4 @@ class deleteUser(Resource):
     @role_required(["superadmin"])
     def delete(self,user_id):
         return delete(user_id)
+    

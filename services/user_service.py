@@ -1,104 +1,109 @@
-from models.user_model import user
+from models.user_model import User
 from database.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import session
 from utils.response import error_response, success_response
 
-# register
+# Register
 def register(data):
     try:
-        existing_user = user.query.filter_by(username = data["username"]).first()
+        username = data.get("username").lower()
+        name = data.get("name")
+        password = data.get("password")
+        role = data.get("role")
+
+        existing_user = User.query.filter_by(username=username).first()
 
         if existing_user:
-            return error_response("Username already exixsts",400)
+            return error_response("Username already exists", 400)
     
-
-        role = data.get("role","admin")
         if role not in ["admin","superadmin"]:
-            return error_response("invalid role",400)
+            return error_response("invalid role select",400)
     
-        new_user = user(
-                    name = data["name"],
-                    username=data["username"],
-                    password=generate_password_hash(data["password"]),
-                    role=role
-                    )
+        new_user = User(
+            name=name,
+            username=username,
+            password=generate_password_hash(password),
+            role=role
+        )
 
         db.session.add(new_user)
         db.session.commit()
 
         return success_response(
-                                "User registered successflly",
-                                {
-                                "username":new_user.username,
-                                "role": new_user.role
-                                },
-                                201)
+            "User registered successfully",
+            {
+                "username": new_user.username,
+                "role": new_user.role
+            },
+            201
+        )
 
     except Exception as e:
-        return error_response(str(e))
-
+        db.session.rollback()
+        return error_response(f"Internal error: {str(e)}", 500)
 
 # Login
 def login(data):
     try:
-        username = data.get("username")
+        username = data.get("username").lower()
         password = data.get("password")
 
-        User = user.query.filter_by(username=username).first()
+        current_user = User.query.filter_by(username=username).first()
 
-        if not User:
-            return error_response("user not found")
+        if not current_user:
+            return error_response("User not found", 404)
         
-        if not check_password_hash(User.password,password):
-            return error_response("invalid password")
+        if not check_password_hash(current_user.password, password):
+            return error_response("Invalid password", 401)
 
-
-        session["user_id"]=User.id
-        session["role"]=User.role
+        session["user_id"] = current_user.id
+        session["role"] = current_user.role
 
         return success_response(
             "Login Successful",
             {
-            "id": User.id,
-            "username":User.username,
-            "role": User.role
-            })
+                "id": current_user.id,
+                "username": current_user.username,
+                "role": current_user.role
+            }
+        )
 
     except Exception as e:
-        return error_response(str(e))
+        return error_response(str(e), 500)
     
-
-# change password
+# Change Password
 def change(data):
     try:
-
-        User = user.query.filter_by(username=data["username"]).first()
-        if not User:
-            return error_response("user not found")
+        username = data.get("username").lower()
+        current_user = User.query.filter_by(username=username).first()
         
-        if not check_password_hash(User.password, data["old_password"]):
-            return error_response("old password is incorrect")
+        if not current_user:
+            return error_response("User not found", 404)
         
-        User.password = generate_password_hash(data["new_password"])
+        if not check_password_hash(current_user.password, data.get("old_password")):
+            return error_response("Old password is incorrect", 401)
+        
+        current_user.password = generate_password_hash(data.get("new_password"))
         db.session.commit()
-        return success_response("password change succesfully")
+        return success_response("Password changed successfully")
        
     except Exception as e:
-        return error_response(str(e))
+        db.session.rollback()
+        return error_response(str(e), 500)
     
-
-# delete user
+# Delete User
 def delete(user_id):
     try:
-        User = db.session.get(user,user_id)
+        current_user = db.session.get(User, user_id)
 
-        if not User:
-            return error_response("user not found")
+        if not current_user:
+            return error_response("User not found", 404)
         
-        db.session.delete(User)
+        db.session.delete(current_user)
         db.session.commit()
-        return success_response("user deleted successfully")
+        return success_response("User deleted successfully")
     
     except Exception as e:
-        return error_response(str(e))
+        db.session.rollback()
+        return error_response(str(e), 500)

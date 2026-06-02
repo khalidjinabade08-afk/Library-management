@@ -34,12 +34,10 @@ def register_user(username, name, password, role):
         "username": username,
         "name": name,
         "password": password,
-        "role": role,
+        "role":role
     }
     try:
         response = requests.post(f"{base_url}/register", json=payload)
-        st.write("Status code:", response.status_code)
-        st.write("Response text:", response.text)
         
         if response.status_code in [200, 201]:
             st.success("Registration Successful! Please Login.")
@@ -48,7 +46,8 @@ def register_user(username, name, password, role):
                 st.error(response.json().get("message", "Registration failed"))
             except Exception:
                 st.error(response.text)
-
+    except requests.exceptions.ConnectionError:
+        st.error("Cannot connect to the server. Please ensure the backend API is running")
     except Exception as e:
         st.error(f"Connection Error: {e}")
 
@@ -84,9 +83,7 @@ def auth_page():
             password = st.text_input(
                 "Password", type="password", placeholder="Minimum 6 characters", key="reg_pass_key"
             )
-            role = st.selectbox(
-                "Organizational Role", ["admin", "superadmin"]
-            )
+            role = st.selectbox("Organizational Role",["admin","superadmin"],key="reg_role_key")
 
             register_btn = st.form_submit_button("Register")
 
@@ -94,15 +91,15 @@ def auth_page():
                 if not name or not username or not password:
                     st.warning("Please fill all fields")
                 else:
-                    register_user(username, name, password, role)
+                    register_user(username, name, password,role)
 
 def dashboard():
     st.title("Library Management System")
 
     user_info = st.session_state.user_data or {}
     
-    st.write(f"Welcome, {user_info.get('name', 'User')}")
-    st.write(f"Role: {user_info.get('role', '')}")
+    st.write(f"Welcome, **{user_info.get('name', 'User')}**")
+    st.write(f"Role: **{user_info.get('role', '')}**")
 
     if st.button("Logout", key="logout_btn"):
         logout()
