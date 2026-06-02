@@ -73,8 +73,10 @@ elif page == "member":
               st.write("create Member")
 
         with tab3:
+               st.number_input("Member ID", min_value=1)
                st.write("Update Member information")
 
         with tab4:
+               st.number_input("Member ID",min_value=1)
                st.write("Remove member")
 
