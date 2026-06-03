@@ -40,7 +40,7 @@ update_member_model = member_routes.model("update",{
 @member_routes.route("/create")
 class create(Resource):
     @member_routes.expect(create_member_model)
-    @role_required(["superadmin","admin"])
+    # @role_required(["superadmin","admin"])
     def post(self):
         data = request.get_json()
         return create_member(data)
@@ -69,7 +69,7 @@ class Show(Resource):
         }
     )
 
-    @role_required(["superadmin","admin"])
+    # @role_required(["superadmin","admin"])
     def get(self):
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get(
@@ -90,7 +90,7 @@ class search(Resource):
             "book": "member book",
         }
     )
-    @role_required(["superadmin","admin"])
+    # @role_required(["superadmin","admin"])
     def get(self):
         data = request.args.to_dict()
         return search_member(**data)
@@ -132,7 +132,7 @@ class SearchMember(Resource):
 # delete member
 @member_routes.route("/delete/<int:member_id>")
 class deleteMember(Resource):
-    @role_required(["superadmin"])
+    # @role_required(["superadmin"])
     def delete(self, member_id):
         return delete_member(member_id)
     
@@ -140,7 +140,7 @@ class deleteMember(Resource):
 @member_routes.route("/update/<int:member_id>")
 class updateMember(Resource):
     @member_routes.expect(update_member_model)
-    @role_required(["superadmin","admin"])
+    # @role_required(["superadmin","admin"])
     def put(self, member_id):
         data = request.get_json()
         return update_member(member_id, data)

@@ -29,7 +29,7 @@ with st.sidebar:
     st.divider()
 
     st.markdown("MANAGEMENT")
-    if st.button("Report & Analytics", use_container_width=True):
+    if st.button("Membership", use_container_width=True):
             st.session_state.page="management"
 
     if st.button("Overdue Reminder", use_container_width=True):
@@ -47,7 +47,7 @@ if page =="Overview":
        st.title("Dashboard")
 elif page == "books":
     st.title("Books")
-    tab1,tab2,tab3,tab4 = st.tabs(["View Books", "Add Book", "Update Book", "Delete Book"])
+    tab1,tab2,tab3,tab4,tab5 = st.tabs(["View Books", "Add Book", "search book","Update Book", "Delete Book"])
 
     with tab1:
            st.write("All Books")
@@ -56,27 +56,147 @@ elif page == "books":
            st.write("Add Book")
 
     with tab3:
-           st.write("Update Book")
+           st.number_input("Book ID", min_value=1,key="search_book")
+           st.write("Search Book")
 
     with tab4:
+           st.number_input("Book ID", min_value=1,key="update_book")
+           st.write("Update Book")
+
+    with tab5:
+           st.number_input("book ID", min_value=1,key="delete_book")
            st.write("Delete Book")
 
 elif page == "member":
         st.title("Member")
 
-        tab1, tab2, tab3, tab4 = st.tabs(["View Member", "Add Member", "Update Member", "Delete Member"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["View Member", "Add Member", "Search Member" ,"Update Member", "Delete Member"])
 
         with tab1:
                st.write("Member List")
 
         with tab2:
-              st.write("create Member")
+              st.subheader("Create Member")
 
-        with tab3:
-               st.number_input("Member ID", min_value=1)
-               st.write("Update Member information")
+              name = st.text_input("Member Name",key="member_name")
+              phone_no = st.text_input("Phone Number", key="member_phone")
+              address = st.text_area("Address", key="member_address")
 
+              if st.button("Create Member", key="create_member_btn"):
+                     payload = {"name":name, "phone_no":phone_no, "address":address}
+                     response = requests.post(f"{member_url}/create", json=payload)
+                     data = response.json()
+
+                     if response.status_code == 200:
+                            st.success(data.get("message"))
+                            member_data = data.get("data",{})
+
+                            if member_data:
+                                   df = pd.DataFrame([member_data])
+                                   st.dataframe(df,use_container_width=True)
+                     else:
+                            st.error(data.get("message"))
+                
+
+        with tab3:   
+                st.subheader("Search Member")
+                search_by = st.radio("Search by",["Member ID", "Member Name"],key="search_type")
+
+                if search_by == "Member ID":
+                        member_id = st.number_input("Member ID", min_value=1, key="search_member_id")
+
+                        if st.button("Search", key="search_id_btn"):
+                                response = requests.get(f"{member_url}/search", params={"id":member_id})
+
+                                data = response.json()
+
+                                if response.status_code == 200:
+                                        st.success("Member Found")
+
+                                        if 'data' in data:
+                                              df = pd.DataFrame(data['data'])
+                                              st.dataframe(df, use_container_width=True)
+
+                                        else:
+                                              st.write(data)
+                                else:st.error(data.get("message", "member not found"))
+
+
+                else:
+                       member_name = st.text_input("Member Name", key="search_member_name")
+
+                       if st.button("Search",key="search_name_btn"):
+                                response = requests.get(f"{member_url}/search", params={"name": member_name})
+
+                                data = response.json()
+
+                                if response.status_code == 200:
+                                        st.success("Member Found")
+
+                                        if "data" in data:
+                                              df=pd.DataFrame(data["data"])
+                                              st.dataframe(df, use_container_width=True)
+                                        
+                                        else:
+                                               st.write(data)
+                                else:
+                                       st.error(data.get("message", "member not found"))
+                              
         with tab4:
-               st.number_input("Member ID",min_value=1)
-               st.write("Remove member")
+               st.subheader("Update Member")
+
+               member_id = st.number_input("Member ID", min_value=1, key="update_member_id")
+               name = st.text_input("new name", key="update_member_name")
+               phone_no = st.text_input("New Phone Number", key="update_member_phone")
+               address = st.text_input("New Address", key="Upddate_member_address")
+
+               if st.button("Update Member", key="update_member_btn"):
+                      payload={
+                             "name":name,
+                             "phone_no": phone_no,
+                             "address": address
+                      }
+
+                      response = requests.put(
+                             f"{member_url}/update/{member_id}",
+                             json=payload
+                      )
+
+                      data = response.json()
+
+
+                      if response.status_code == 200:
+                             st.success(data.get("message"))
+
+                             member_info = [
+                                    f"Member ID: {member_id}",
+                                    f"Name: {name}",
+                                    f"Phone Number: {phone_no}",
+                                    f"Address: {address}"
+                             ]
+                             for item in member_info:
+                                    st.write("*", item)
+                      else: 
+                             st.error(data.get("Message"))
+                      
+
+        with tab5:
+               st.subheader("Delete Member")
+
+               member_id = st.number_input("Member ID", min_value=1, step=1, key="delete_member")
+               st.write("Remove Member")
+               if st.button("Delete Member"):
+                        response = requests.delete(
+                        f"{member_url}/delete/{member_id}",
+                        headers={"Authorization": f"Bearer {st.session_state.get('token','')}"}
+                )
+                        data = response.json()
+
+                        if response.status_code == 200:
+                                st.success(data["message"])
+                      
+
+                        else:
+                                st.error(data.get("message","Member not found"))
+
 
