@@ -83,68 +83,9 @@ elif page == "member":
     )
 
     with tab1:
-        #  st.subheader("Member List")
-        #  if "member_page" not in st.session_state:
-        #         st.session_state.member_page = 1
-        #  per_page = 4
-
-        #  page_input = st.number_input("Page Number", min_value=1, value=int(st.session_state.member_page), step=1)
-        #  st.session_state.member_page = int(page_input)
-
-        #  response = requests.get(
-        #         f"{member_url}/show",
-        #         params={
-        #                "page": st.session_state.member_page,
-        #                "per_page": per_page
-        #         }
-        #  )
-
-        #  data = response.json()
-
-        #  if "Members" in data and data["Members"]:
-        #         rows = []
-        #         for member in data["Members"]:
-        #                rows.append({
-        #                "id": member.get('id',''),
-        #                "name": member.get('name',''),
-        #                "address": member.get('address',''),
-        #                "Phone": member.get('phone no',''),
-        #                "Membership Start Date": member.get('membership start date',''),
-        #                "Membership End Date": member.get('membership end date',''),
-        #                "Membership Status": member.get('membership status','')
-        #                })
-        #         df = pd.DataFrame(rows)
-        #         st.dataframe(df, use_container_width=True, hide_index=True)
-
-        #  else:
-        #         st.warning("No members found")
-
-        #  st.write(f"Current Page: {data.get('current page',1)} / {data.get('total page',1)}")
-
-        #  col1, col2 = st.columns(2)
-
-        #  with col1:
-        #         if st.button("Previous"):
-        #                if st.session_state.member_page > 1:
-        #                       st.session_state.member_page -= 1
-        #                       st.rerun()
-
-        #  with col2:
-        #         if st.button("Next"):
-        #                if st.session_state.member_page < data.get("total page",1):
-        #                       st.session_state.member_page += 1
-        #                       st.rerun()
-
-        # ==========================
-        # ==========================
-        # SHOW ALL MEMBERS
-        # ==========================
-
-        # Store current page
         if "member_page" not in st.session_state:
             st.session_state.member_page = 1
 
-            # Top Card
             st.markdown(
                 """
                     <div class="glass-card">
@@ -165,14 +106,10 @@ elif page == "member":
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # API URL
         params = {"page": st.session_state.member_page, "per_page": per_page}
 
-        get_url = f"{base_url}/member/show"  # Change according to your route
+        response = requests.get(f"{member_url}/show", params=params)
 
-        response = requests.get(get_url, params=params)
-
-        # Members Data Card
         st.markdown(
             """
             <div class="glass-card">
@@ -219,10 +156,6 @@ elif page == "member":
             st.error(f"Failed to fetch members. Status Code: {response.status_code}")
 
         st.markdown("</div>", unsafe_allow_html=True)
-
-        # ==========================
-        # PAGINATION BUTTONS
-        # ==========================
 
         prev_col, center_col, next_col = st.columns([1, 2, 1])
 
