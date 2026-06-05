@@ -168,7 +168,7 @@ def get_all_member(page=1,per_page=4):
             })
 
         return {
-            "Mebers" : members,
+            "Members" : members,
             "total no" : page_obj.total,
             "total page" : page_obj.pages,
             "current page" : page_obj.page

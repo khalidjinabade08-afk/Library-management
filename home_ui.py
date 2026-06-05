@@ -70,10 +70,200 @@ elif page == "books":
 elif page == "member":
         st.title("Member")
 
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["View Member", "Add Member", "Search Member" ,"Update Member", "Delete Member"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["View Members", "Add Member", "Search Member" ,"Update Member", "Delete Member"])
 
         with tab1:
-               st.write("Member List")
+              #  st.subheader("Member List")
+              #  if "member_page" not in st.session_state:
+              #         st.session_state.member_page = 1
+              #  per_page = 4
+
+              #  page_input = st.number_input("Page Number", min_value=1, value=int(st.session_state.member_page), step=1)
+              #  st.session_state.member_page = int(page_input)
+
+              #  response = requests.get(
+              #         f"{member_url}/show",
+              #         params={
+              #                "page": st.session_state.member_page,
+              #                "per_page": per_page
+              #         }
+              #  )
+
+              #  data = response.json()
+
+              #  if "Members" in data and data["Members"]:
+              #         rows = []
+              #         for member in data["Members"]:
+              #                rows.append({
+              #                "id": member.get('id',''),
+              #                "name": member.get('name',''),
+              #                "address": member.get('address',''),
+              #                "Phone": member.get('phone no',''),
+              #                "Membership Start Date": member.get('membership start date',''),
+              #                "Membership End Date": member.get('membership end date',''),
+              #                "Membership Status": member.get('membership status','')
+              #                })
+              #         df = pd.DataFrame(rows)
+              #         st.dataframe(df, use_container_width=True, hide_index=True)
+
+              #  else:
+              #         st.warning("No members found")
+
+              #  st.write(f"Current Page: {data.get('current page',1)} / {data.get('total page',1)}")
+
+              #  col1, col2 = st.columns(2)
+
+              #  with col1:
+              #         if st.button("Previous"):
+              #                if st.session_state.member_page > 1:
+              #                       st.session_state.member_page -= 1
+              #                       st.rerun()
+
+              #  with col2:
+              #         if st.button("Next"):
+              #                if st.session_state.member_page < data.get("total page",1):
+              #                       st.session_state.member_page += 1
+              #                       st.rerun()
+
+              # ==========================
+# SHOW ALL MEMBERS
+# ==========================
+# Store current page
+if "member_page" not in st.session_state:
+    st.session_state.member_page = 1
+
+# Top Card
+st.markdown(
+    """
+    <div class="glass-card">
+        <div class="section-title">
+            Browse Members
+        </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+col1, col2, col3 = st.columns([1, 1, 2])
+
+with col1:
+    per_page = st.selectbox(
+        "Members Per Page",
+        options=[4, 8, 12, 16],
+        index=0
+    )
+
+with col2:
+    st.metric("Current Page", st.session_state.member_page)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# API URL
+params = {
+    "page": st.session_state.member_page,
+    "per_page": per_page
+}
+
+get_url = f"{base_url}/member/show"      # Change according to your route
+
+response = requests.get(get_url, params=params)
+
+# Members Data Card
+st.markdown(
+    """
+    <div class="glass-card">
+        <div class="section-title">
+            Member Records
+        </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+if response.status_code == 200:
+
+    raw_data = response.json()
+
+    if "Members" in raw_data:
+
+        members = raw_data["Members"]
+
+        if members:
+
+            df = pd.DataFrame(members)
+
+            st.dataframe(
+                df,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            # Statistics
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric(
+                    "Total Members",
+                    raw_data.get("total no", 0)
+                )
+
+            with col2:
+                st.metric(
+                    "Total Pages",
+                    raw_data.get("total page", 0)
+                )
+
+            with col3:
+                st.metric(
+                    "Current Page",
+                    raw_data.get("current page", 0)
+                )
+
+        else:
+            st.warning("No members found.")
+
+    else:
+        st.error("Members data not found in API response.")
+
+else:
+    st.error(f"Failed to fetch members. Status Code: {response.status_code}")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ==========================
+# PAGINATION BUTTONS
+# ==========================
+
+prev_col, center_col, next_col = st.columns([1, 2, 1])
+
+with prev_col:
+    if st.button("⬅ Previous", use_container_width=True):
+        if st.session_state.member_page > 1:
+            st.session_state.member_page -= 1
+            st.rerun()
+
+with center_col:
+    st.markdown(
+        f"""
+        <div style="
+            text-align:center;
+            font-size:20px;
+            font-weight:600;
+            padding-top:8px;
+        ">
+            Page {st.session_state.member_page}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with next_col:
+    if st.button("Next ➝", use_container_width=True):
+
+        total_pages = raw_data.get("total page", 1)
+
+        if st.session_state.member_page < total_pages:
+            st.session_state.member_page += 1
+            st.rerun()
+                      
 
         with tab2:
               st.subheader("Create Member")
