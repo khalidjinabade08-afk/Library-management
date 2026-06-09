@@ -7,6 +7,7 @@ from flask import session
 from datetime import date, timedelta
 from utils.response import error_response, success_response
 
+
 def issue_book(data):
     try:
         member_id = data.get("member_id")
@@ -15,22 +16,22 @@ def issue_book(data):
         member = db.session.get(Member, member_id)
         if not member:
             return error_response("Member not found")
-        
-        target_book = db.session.get(book,book_id)
+
+        target_book = db.session.get(book, book_id)
         if not target_book:
             return error_response("Book not found")
-        
+
         if target_book.quantity <= 0:
             return error_response("Book is out of stock")
-        
+
         new_transaction = Transaction(
             member_id=member_id,
             book_id=book_id,
             issue_date=date.today(),
             due_date=date.today() + timedelta(days=30),
-            status="issued"
+            status="issued",
         )
-        
+
         db.session.add(new_transaction)
         target_book.quantity -= 1
         db.session.commit()
@@ -38,15 +39,16 @@ def issue_book(data):
             "Book issued successfully",
             {
                 "transaction id": new_transaction.id,
-                "member id":member_id,
-                "book id":book_id,
+                "member id": member_id,
+                "book id": book_id,
                 "issue date": str(new_transaction.issue_date),
                 "due date": str(new_transaction.due_date),
-                "status": new_transaction.status
-            }
+                "status": new_transaction.status,
+            },
         )
     except Exception as e:
         return error_response(str(e))
+
 
 def return_book(data):
     try:
@@ -72,62 +74,65 @@ def return_book(data):
         if transaction.return_date > transaction.due_date:
             late_days = (transaction.return_date - transaction.due_date).days
 
-            fine = late_days*10
+            fine = late_days * 10
 
         transaction.fine_amount = fine
 
-        Book.quantity +=1
+        Book.quantity += 1
         db.session.commit()
 
         return success_response(
             "Book returned successfully",
             {
                 "transaction id": transaction.id,
-                "book id":transaction.book_id,
+                "book id": transaction.book_id,
                 "member id": transaction.member_id,
                 "return date": str(transaction.return_date),
                 "fine amount": float(transaction.fine_amount),
-                "status": transaction.status
-            }
+                "status": transaction.status,
+            },
         )
 
     except Exception as e:
         return error_response(str(e))
 
+
 def show_transaction(page=1, per_page=4):
     try:
-        page_obj = Transaction.query.order_by(Transaction.id.desc()).paginate(
-            page=page,
-            per_page=per_page,
-            error_out=False
+        page_obj = Transaction.query.order_by(Transaction.id.asc()).paginate(
+            page=page, per_page=per_page, error_out=False
         )
 
-        transaction = []
+        transactions = []
 
-        for transactions in page_obj.items:
-            transaction.append({
-                "id":transactions.id,
-                "member_id":transactions.member_id,
-                "book_id":transactions.book_id,
-                "issue_date":transactions.issue_date.strftime("%y-%m-%d"),
-                "due_date":transactions.due_date.strftime("%y-%m-%d"),
-                "return_date":(
-                    transactions.return_date.strftime("%Y-%m-%d")
-                    if transactions.return_date
-                    else None
-                ),
-                "fine_date":float(transactions.fine_amount),
-                "status":transactions.status
-            })
+        for transaction in page_obj.items:
+            transactions.append(
+                {
+                    "id": transaction.id,
+                    "member_id": transaction.member_id,
+                    "book_id": transaction.book_id,
+                    "issue_date": transaction.issue_date.strftime("%Y-%m-%d"),
+                    "due_date": transaction.due_date.strftime("%Y-%m-%d"),
+                    "return_date": (
+                        transaction.return_date.strftime("%Y-%m-%d")
+                        if transaction.return_date
+                        else None
+                    ),
+                    "fine_amount": float(transaction.fine_amount or 0.0),
+                    "status": transaction.status,
+                }
+            )
 
-        return success_response({
-            "message": "transactions found",
-            "transaction": transaction,
-            "total_records": page_obj.total,
-            "current_page": page_obj.page,
-            "total_pages": page_obj.pages,
-            "per_page": page_obj.per_page
-        })
+        return success_response(
+            "transactions found",
+            {
+                "transaction": transactions,
+                "total_records": page_obj.total,
+                "current_page": page_obj.page,
+                "total_pages": page_obj.pages,
+                "per_page": page_obj.per_page,
+            },
+        )
 
     except Exception as e:
         return error_response(str(e))
