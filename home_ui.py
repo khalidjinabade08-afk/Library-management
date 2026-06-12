@@ -67,8 +67,9 @@ if page == "Overview":
     [data-testid="stHeaderBlock"] h2, 
     [data-testid="stMarkdownContainer"] h2,
     .stSubheader h2 {
-        color: #000000 !important; 
+        color: #1E3A8A !important; 
         font-weight: 800 !important;
+        font-size: 2rem !important;
         border-bottom: 2px solid #E0E7FF; 
         padding-bottom: 8px;
     }
@@ -109,7 +110,6 @@ if page == "Overview":
     )
 
     with tab1:
-        # Isolated tab-specific style modifications to prevent overriding the main black header
         st.markdown(
             """
         <style>
