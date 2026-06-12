@@ -31,7 +31,7 @@ api = Api(
     title="Library Management System API",
     version="1.0",
     description="Library Management System",
-    doc="/swagger"
+    doc="/swagger",
 )
 
 api.add_namespace(auth_routes, path="/auth")
@@ -43,8 +43,4 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5501,
-        debug=True
-    )
+    app.run(host="0.0.0.0", port=5501, debug=True)

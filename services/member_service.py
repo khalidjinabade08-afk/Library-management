@@ -79,6 +79,44 @@ def add_membership(data):
         return {"error": str(e)}
 
 
+def show_membership(page=1, per_page=4):
+    try:
+        page_obj = Membership.query.order_by(Membership.id.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        memberships = []
+
+        for membership in page_obj.items:
+            member = db.session.get(Member, membership.member_id)
+
+            memberships.append(
+                {
+                    "member_id": member.id,
+                    "member_name": member.name,
+                    "phone_no": member.phone_no,
+                    "address": member.address,
+                    "membership_type": membership.membership_type,
+                    "start_date": str(membership.start_date),
+                    "end_date": str(membership.end_date),
+                }
+            )
+
+        return success_response(
+            "Memberships found",
+            {
+                "memberships": memberships,
+                "total_records": page_obj.total,
+                "current_page": page_obj.page,
+                "total_pages": page_obj.pages,
+                "per_page": page_obj.per_page,
+            },
+        )
+
+    except Exception as e:
+        return error_response(str(e))
+
+
 def search_membership(page=1, per_page=4, **kwargs):
     try:
         page_obj = Member.query.order_by(Member.id.desc()).paginate(
@@ -109,15 +147,15 @@ def search_membership(page=1, per_page=4, **kwargs):
                 }
             )
 
-            return success_response(
-                "membership found",
-                {
-                    "membership": output,
-                    "total no": page_obj.total,
-                    "total page": page_obj.pages,
-                    "current page": page_obj.page,
-                },
-            )
+        return success_response(
+            "membership found",
+            {
+                "membership": output,
+                "total no": page_obj.total,
+                "total page": page_obj.pages,
+                "current page": page_obj.page,
+            },
+        )
     except Exception as e:
         return error_response(str(e))
 

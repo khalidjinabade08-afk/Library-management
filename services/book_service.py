@@ -8,11 +8,13 @@ from utils.response import success_response, error_response
 
 def add_book(data):
     try:
+        initial_quantity = data["quantity"]
         new_book = book(
             title=data["title"],
             author=data["author"],
             category=data["category"],
-            quantity=data["quantity"],
+            quantity=initial_quantity,
+            available_quantity=initial_quantity,
             publishes_year=data["publishes_year"],
             created_at=datetime.strptime(data["created_at"], "%Y-%m-%d").date(),
         )
@@ -35,30 +37,30 @@ def get_all_book(page=1, per_page=4):
         for b in page_obj.items:
             books.append(
                 {
-                    "id": b.id,
+                    "id": int(b.id),
                     "title": b.title,
                     "author": b.author,
                     "category": b.category,
-                    "quantity": b.quantity,
-                    "available_quantity": b.available_quantity,
-                    "publishes_year": b.publishes_year,
-                    "created_at": b.created_at.strftime("%y-%m-%d"),
+                    "quantity": int(b.quantity),
+                    "available_quantity": int(b.available_quantity),
+                    "publishes_year": (
+                        int(b.publishes_year) if b.publishes_year is not None else None
+                    ),
+                    "created_at": str(b.created_at) if b.created_at else None,
                 }
             )
 
-        total_available = (
-            db.session.query(func.sum(book.available_quantity)).scalar() or 0
-        )
+        total_available = db.session.query(func.sum(book.available_quantity)).scalar()
 
         return success_response(
             {
-                "books found": len(books),
+                "books found": int(len(books)),
                 "title": books,
-                "total records": page_obj.total,
-                "available books": total_available,
-                "current page": page_obj.page,
-                "total pages": page_obj.pages,
-                "per page": page_obj.per_page,
+                "total records": int(page_obj.total),
+                "available books": int(total_available),
+                "current page": int(page_obj.page),
+                "total pages": int(page_obj.pages),
+                "per page": int(page_obj.per_page),
             }
         )
 
@@ -73,12 +75,20 @@ def update(book_id, data):
         if not Book:
             return error_response("Book not find")
 
+        new_quantity = data.get("quantity", Book.quantity)
+        if new_quantity != Book.quantity:
+            quantity_diffrence = new_quantity - Book.quantity
+            Book.available_quantity += quantity_diffrence
+
         Book.title = data.get("title", Book.title)
         Book.author = data.get("author", Book.author)
         Book.category = data.get("category", Book.category)
         Book.quantity = data.get("quantity", Book.quantity)
         Book.publishes_year = data.get("publishes_year", Book.publishes_year)
         Book.created_at = data.get("created_at", Book.created_at)
+
+        if "created_at" in data:
+            Book.created_at = datetime.strptime(data["created_at"], "%Y-%m-%d").date()
 
         db.session.commit()
         return success_response("Book information updated")
@@ -114,7 +124,7 @@ def search_book(**kwargs):
                     "quantity": Books.quantity,
                     "Book available quantity": Books.available_quantity,
                     "publishes year": Books.publishes_year,
-                    "created at": Books.created_at.strftime("%Y-%m-%d"),
+                    "created at": str(Books.created_at) if Books.created_at else None,
                 }
             )
 

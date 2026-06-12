@@ -1,7 +1,12 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request
 from utils.role_requirment import role_required
-from services.transaction_services import issue_book, return_book, show_transaction
+from services.transaction_services import (
+    issue_book,
+    return_book,
+    show_transaction,
+    show_fines,
+)
 
 transaction_routes = Namespace("Transaction API", description="Transaction APIs")
 
@@ -57,3 +62,40 @@ class ShowTransaction(Resource):
         per_page = request.args.get("per_page", 4, type=int)
 
         return show_transaction(page, per_page)
+
+
+@transaction_routes.route("/fines")
+class ShowFines(Resource):
+
+    @transaction_routes.doc(
+        params={
+            "page": {
+                "description": "Page Number",
+                "type": "int",
+                "default": 1,
+            },
+            "per_page": {
+                "description": "Records Per Page",
+                "type": "int",
+                "default": 4,
+            },
+        }
+    )
+    def get(self):
+
+        page = request.args.get(
+            "page",
+            1,
+            type=int,
+        )
+
+        per_page = request.args.get(
+            "per_page",
+            4,
+            type=int,
+        )
+
+        return show_fines(
+            page=page,
+            per_page=per_page,
+        )

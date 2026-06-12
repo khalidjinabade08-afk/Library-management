@@ -136,3 +136,47 @@ def show_transaction(page=1, per_page=4):
 
     except Exception as e:
         return error_response(str(e))
+
+
+def show_fines(page=1, per_page=4):
+    try:
+        page_obj = (
+            Transaction.query.filter(Transaction.fine_amount > 0)
+            .order_by(Transaction.id.desc())
+            .paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False,
+            )
+        )
+
+        fines = []
+
+        for transaction in page_obj.items:
+
+            member = db.session.get(Member, transaction.member_id)
+
+            fines.append(
+                {
+                    "transaction_id": transaction.id,
+                    "member_id": member.id,
+                    "member_name": member.name,
+                    "phone_no": member.phone_no,
+                    "book_id": transaction.book_id,
+                    "return_date": str(transaction.return_date),
+                    "fine_amount": float(transaction.fine_amount),
+                }
+            )
+
+        return success_response(
+            "Fine records found",
+            {
+                "fines": fines,
+                "total_records": page_obj.total,
+                "current_page": page_obj.page,
+                "total_pages": page_obj.pages,
+            },
+        )
+
+    except Exception as e:
+        return error_response(str(e))

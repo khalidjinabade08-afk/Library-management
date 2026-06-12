@@ -7,6 +7,7 @@ from services.member_service import (
     add_membership,
     search_member,
     search_membership,
+    show_membership,
     update_member,
     delete_member,
 )
@@ -62,7 +63,7 @@ class create(Resource):
 @member_routes.route("/membership")
 class addmembership(Resource):
     @member_routes.expect(membership_model)
-    @role_required(["superadmin", "admin"])
+    # @role_required(["superadmin", "admin"])
     def post(self):
         data = request.get_json()
         return add_membership(data)
@@ -88,6 +89,34 @@ class Show(Resource):
         per_page = request.args.get("per_page", 4, type=int)
 
         return get_all_member(page, per_page)
+
+
+# show all memberships
+@member_routes.route("/membership/show")
+class ShowMembership(Resource):
+
+    @member_routes.doc(
+        params={
+            "page": {
+                "description": "Page Number",
+                "type": "int",
+                "default": 1,
+            },
+            "per_page": {
+                "description": "Records Per Page",
+                "type": "int",
+                "default": 4,
+            },
+        }
+    )
+    # @role_required(["superadmin", "admin"])
+    def get(self):
+
+        page = request.args.get("page", 1, type=int)
+
+        per_page = request.args.get("per_page", 4, type=int)
+
+        return show_membership(page=page, per_page=per_page)
 
 
 # search member

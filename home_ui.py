@@ -1,11 +1,12 @@
 import streamlit as st
 import requests
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 base_url = "http://127.0.0.1:5501"
-member_url = f"{base_url}/member"
 book_url = f"{base_url}/book"
-Activites = f"{base_url}/transaction"
+member_url = f"{base_url}/member"
 
 if "page" not in st.session_state:
     st.session_state.page = "Overview"
@@ -53,7 +54,153 @@ page = st.session_state.page
 
 # --- Overview / Dashboard ---
 if page == "Overview":
-    st.title("Dashboard")
+    # --- FIXED CSS FOR BLACK HEADERS ---
+    st.markdown(
+        """
+<style>
+    /* Main Application Background - White */
+    .stApp {
+        background-color: #FFFFFF;
+    }
+
+    /* Dashboard Subheader Styling - Forced Black Theme */
+    [data-testid="stHeaderBlock"] h2, 
+    [data-testid="stMarkdownContainer"] h2,
+    .stSubheader h2 {
+        color: #000000 !important; 
+        font-weight: 800 !important;
+        border-bottom: 2px solid #E0E7FF; 
+        padding-bottom: 8px;
+    }
+    
+    /* Dashboard Metric Values */
+    [data-testid="stMetricValue"] {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1E3A8A;
+    }
+    
+    /* Dashboard Metric Labels */
+    [data-testid="stMetricLabel"] {
+        font-size: 14px;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    /* Dashboard Metric Cards */
+    div[data-testid="stMetric"] {
+        background-color: #F1F5F9; 
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        margin-bottom: 10px;
+    }
+</style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # --- HOME / DASHBOARD CONTENT ---
+    st.subheader("Dashboard Overview")
+
+    # --- TABS CREATION ---
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Books Summary", "member summary", "membership summry", "Transaction summary"]
+    )
+
+    with tab1:
+        # Isolated tab-specific style modifications to prevent overriding the main black header
+        st.markdown(
+            """
+        <style>
+            /* Books Metric Values - Deep Teal (#00AAA6) */
+            [data-testid="stMetricValue"] {
+                font-size: 26px;
+                color: #00AAA6;
+            }
+        
+            /* Books Metric Labels - Neutral Muted Gray (#737373) */
+            [data-testid="stMetricLabel"] {
+                color: #737373;
+            }
+        
+            /* Books Metric Cards - Light Gray Background (#F5F5F5) */
+            div[data-testid="stMetric"] {
+                background-color: #F5F5F5;
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #E5E5E5;
+            }
+        
+            .category-title {
+                color: #737373;
+                font-weight: bold;
+            }
+        </style>
+        """,
+            unsafe_allow_html=True,
+        )
+
+        st.subheader("Books Summary")
+        try:
+            response = requests.get(
+                f"{base_url}/book/show", params={"page": 1, "per_page": 1000}
+            )
+            if response.status_code == 200:
+                data = response.json().get("message", {})
+                books = data.get("title", [])
+                if books:
+                    df = pd.DataFrame(books)
+                    category_counts = pd.Series(dtype=int)  # safe initialization
+                    if "category" in df.columns:
+                        df["category"] = df["category"].replace("", pd.NA)
+                        category_counts = df["category"].value_counts().sort_index()
+
+                    col1, col2 = st.columns([1, 2])
+                    with col1:
+                        st.metric("Total Books", data.get("total records", len(df)))
+                        st.metric("Available Books", data.get("available books", 0))
+                        st.metric("Total Categories", len(category_counts))
+
+                    with col2:
+                        st.markdown(
+                            "<p class='category-title'>Book Distribution by Category</p>",
+                            unsafe_allow_html=True,
+                        )
+                        if not category_counts.empty:
+                            fig, ax = plt.subplots(figsize=(6, 4), facecolor="none")
+                            colors = ["#00AAA6", "#C0FFC8", "#F5F5F5", "#737373"]
+                            ax.pie(
+                                category_counts,
+                                labels=category_counts.index,
+                                autopct="%1.1f%%",
+                                startangle=140,
+                                colors=colors[: len(category_counts)],
+                                textprops={"color": "#737373"},
+                                wedgeprops={"edgecolor": "white", "linewidth": 2},
+                            )
+                            ax.axis("equal")
+                            st.pyplot(fig)
+                        else:
+                            st.info("NO category data found in the records.")
+                else:
+                    st.warning("No books available in the library yet.")
+            else:
+                st.error(
+                    f"Failed to load books. Status Code: {response.status_code}\nResponse: {response.text}"
+                )
+        except Exception as e:
+            st.error(f"Error generating books summary: {e}")
+
+    with tab2:
+        st.subheader("Members Summary")
+
+    # Tab 3: Memberships Summary
+    with tab3:
+        st.subheader("Memberships Summary")
+
+    with tab4:
+        st.subheader("Transaction")
 
 # --- Books Page ---
 elif page == "books":
@@ -181,7 +328,10 @@ elif page == "books":
 
             params["title"] = title
 
-        if st.button("Search Book"):
+        if st.button(
+            "Search Book",
+            use_container_width=True,
+        ):
             try:
                 response = requests.get(f"{book_url}/search", params=params)
 
@@ -227,7 +377,11 @@ elif page == "books":
 
         book_id = st.number_input("Book ID", min_value=1, step=1, key="update_book_id")
 
-        if st.button("Load Book", key="load_book_btn"):
+        if st.button(
+            "Load Book",
+            key="load_book_btn",
+            use_container_width=True,
+        ):
             try:
                 response = requests.get(f"{book_url}/search", params={"id": book_id})
 
@@ -266,7 +420,11 @@ elif page == "books":
             "Published Year", min_value=1000, max_value=9999, key="up_book_year"
         )
 
-        if st.button("Update Book", key="submit_update_book"):
+        if st.button(
+            "Update Book",
+            key="submit_update_book",
+            use_container_width=True,
+        ):
             payload = {
                 "title": title,
                 "author": author,
@@ -337,7 +495,11 @@ elif page == "books":
 
             st.write("Remove Book Record")
 
-        if st.button("Delete Book", key="confirm_delete_book"):
+        if st.button(
+            "Delete Book",
+            key="confirm_delete_book",
+            use_container_width=True,
+        ):
             try:
                 headers = {
                     "Authorization": f"Bearer {st.session_state.get('token', '')}"
@@ -374,36 +536,40 @@ elif page == "transaction":
         )
         book_id = st.number_input("Book ID", min_value=1, key="Issue_book_id")
 
-        if st.button("Issue Book", key="issue_book_btn"):
+        if st.button(
+            "Issue Book",
+            key="issue_book_btn",
+            use_container_width=True,
+        ):
             payload = {"member_id": int(member_id), "book_id": int(book_id)}
-        try:
-            response = requests.post(f"{base_url}/transaction/issue", json=payload)
+            try:
+                response = requests.post(f"{base_url}/transaction/issue", json=payload)
 
-            result = response.json()
+                result = response.json()
 
-            if result.get("status") == "success":
-                st.success(result.get("message"))
+                if result.get("status") == "success":
+                    st.success(result.get("message"))
 
-                data = result.get("data", {})
+                    data = result.get("data", {})
 
-                df = pd.DataFrame(
-                    [
-                        {
-                            "Transaction ID": data.get("transaction id"),
-                            "Member ID": data.get("member id"),
-                            "Book ID": data.get("book id"),
-                            "Issue Date": data.get("issue date"),
-                            "Due Date": data.get("due date"),
-                            "Status": data.get("status"),
-                        }
-                    ]
-                )
+                    df = pd.DataFrame(
+                        [
+                            {
+                                "Transaction ID": data.get("transaction id"),
+                                "Member ID": data.get("member id"),
+                                "Book ID": data.get("book id"),
+                                "Issue Date": data.get("issue date"),
+                                "Due Date": data.get("due date"),
+                                "Status": data.get("status"),
+                            }
+                        ]
+                    )
 
-                st.dataframe(df, use_container_width=True, hide_index=True)
-            else:
-                st.error(result.get("message"))
-        except Exception as e:
-            st.error(f"Error: {e}")
+                    st.dataframe(df, use_container_width=True, hide_index=True)
+                else:
+                    st.error(result.get("message"))
+            except Exception as e:
+                st.error(f"Error: {e}")
 
     # Tab 2: Return Book
     with tab2:
@@ -422,7 +588,11 @@ elif page == "transaction":
             key="return_transaction_id",
         )
 
-        if st.button("Return Book", key="return_book_btn"):
+        if st.button(
+            "Return Book",
+            key="return_book_btn",
+            use_container_width=True,
+        ):
             payload = {"transaction_id": int(transaction_id)}
 
             try:
@@ -692,7 +862,11 @@ elif page == "member":
             member_id = st.number_input(
                 "Member ID", min_value=1, key="search_member_id"
             )
-            if st.button("Search", key="search_id_btn"):
+            if st.button(
+                "Search",
+                key="search_id_btn",
+                use_container_width=True,
+            ):
                 try:
                     response = requests.get(
                         f"{member_url}/search", params={"id": member_id}
@@ -711,7 +885,11 @@ elif page == "member":
                     st.error(f"Search failed: {e}")
         else:
             member_name = st.text_input("Member Name", key="search_member_name")
-            if st.button("Search", key="search_name_btn"):
+            if st.button(
+                "Search",
+                key="search_name_btn",
+                use_container_width=True,
+            ):
                 try:
                     response = requests.get(
                         f"{member_url}/search", params={"name": member_name}
@@ -742,7 +920,11 @@ elif page == "member":
 
         update_id = st.number_input("Member ID", min_value=1, key="update_member_id")
 
-        if st.button("Load Member", key="load_member_btn"):
+        if st.button(
+            "Load Member",
+            key="load_member_btn",
+            use_container_width=True,
+        ):
             try:
                 response = requests.get(
                     f"{member_url}/search", params={"id": update_id}
@@ -771,7 +953,11 @@ elif page == "member":
         up_phone = st.text_input("Phone Number", key="up_phone_input")
         up_address = st.text_input("Address", key="up_address_input")
 
-        if st.button("Update Member", key="submit_update_btn"):
+        if st.button(
+            "Update Member",
+            key="submit_update_btn",
+            use_container_width=True,
+        ):
             if not up_name:
                 st.warning("Please load a member or enter a name first.")
             else:
@@ -827,7 +1013,11 @@ elif page == "member":
             st.write(f"**Address:** {member.get('address', '')}")
             st.write("Remove Member Profile")
 
-        if st.button("Delete Member", key="confirm_delete_btn"):
+        if st.button(
+            "Delete Member",
+            key="confirm_delete_btn",
+            use_container_width=True,
+        ):
             try:
                 headers = {
                     "Authorization": f"Bearer {st.session_state.get('token','')}"
@@ -856,11 +1046,277 @@ elif page == "management":
     with tab1:
         st.subheader("Add Membership")
 
+        member_id = st.number_input(
+            "Member ID", min_value=1, step=1, key="membership_member_id"
+        )
+
+        membership_type = st.selectbox(
+            "Membership Type",
+            ["1 week", "1 month", "6 month", "1 year"],
+            key="membership_type",
+        )
+
+        if st.button(
+            "Add Membership",
+            key="add_membership_btn",
+            use_container_width=True,
+        ):
+
+            payload = {"member_id": int(member_id), "membership_type": membership_type}
+
+            try:
+                response = requests.post(f"{base_url}/member/membership", json=payload)
+
+                result = response.json()
+
+                if "error" in result:
+                    st.error(result["error"])
+
+                elif result.get("message") == "member not found":
+                    st.error("Member not found")
+
+                elif result.get("message") == "invalid membership type":
+                    st.error("Invalid membership type")
+
+                else:
+                    st.success(result.get("message"))
+
+                    df = pd.DataFrame(
+                        [
+                            {
+                                "Member Name": result.get("member_name"),
+                                "Membership Type": membership_type,
+                                "Expiry Date": result.get("expiry_date"),
+                            }
+                        ]
+                    )
+
+                    st.dataframe(df, use_container_width=True, hide_index=True)
+
+            except Exception as e:
+                st.error(f"Error: {e}")
+
     with tab2:
-        st.subheader("search membership")
+        st.subheader("Search Membership")
+
+        membership_type = st.selectbox(
+            "Membership Type",
+            ["1 week", "1 month", "6 month", "1 year"],
+            key="search_membership_type",
+        )
+
+        if st.button(
+            "Search Membership",
+            key="search_membership_btn",
+            use_container_width=True,
+        ):
+            try:
+                response = requests.get(
+                    f"{member_url}/membership/search",
+                    params={
+                        "membership_type": membership_type,
+                        "page": 1,
+                        "per_page": 4,
+                    },
+                )
+
+                result = response.json()
+
+                if response.status_code == 200 and result.get("status") == "success":
+
+                    st.success("Membership Found")
+
+                    data = result.get("data", {})
+                    memberships = data.get("membership", [])
+
+                    if memberships:
+
+                        df = pd.DataFrame(memberships)
+
+                        df = df.rename(
+                            columns={
+                                "member id": "Member ID",
+                                "member name": "Member Name",
+                                "phone no": "Phone No",
+                                "address": "Address",
+                                "membership type": "Membership Type",
+                                "start date": "Start Date",
+                                "end date": "End Date",
+                            }
+                        )
+
+                        st.dataframe(
+                            df,
+                            use_container_width=True,
+                            hide_index=True,
+                        )
+
+                        st.caption(
+                            f"Page {data.get('current page', 1)} "
+                            f"of {data.get('total page', 1)} | "
+                            f"Total Records: {data.get('total no', 0)}"
+                        )
+
+                    else:
+                        st.warning("No memberships found.")
+
+                else:
+                    st.error(result.get("message", "Membership not found"))
+
+            except Exception as e:
+                st.error(f"Search failed: {e}")
 
     with tab3:
-        st.subheader("Membership list")
+        if "membership_page" not in st.session_state:
+            st.session_state.membership_page = 1
+
+        st.markdown(
+            """
+            <div class="glass-card">
+                <div class="section-title">Browse Memberships</div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        col1, col2, col3 = st.columns([1, 1, 2])
+
+        with col1:
+            per_page = st.selectbox(
+                "Memberships Per Page",
+                options=[4, 8, 12, 16],
+                index=0,
+                key="membership_per_page",
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        params = {
+            "page": st.session_state.membership_page,
+            "per_page": per_page,
+        }
+
+        try:
+            response = requests.get(
+                f"{member_url}/membership/show",
+                params=params,
+            )
+
+            st.markdown(
+                """
+                <div class="glass-card">
+                    <div class="section-title">Membership Records</div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            if response.status_code == 200:
+
+                result = response.json()
+
+                if result.get("status") == "success":
+
+                    data = result.get("data", {})
+
+                    memberships = data.get("memberships", [])
+
+                    if memberships:
+
+                        df = pd.DataFrame(memberships)
+
+                        df = df.rename(
+                            columns={
+                                "member_id": "Member ID",
+                                "member_name": "Member Name",
+                                "phone_no": "Phone No",
+                                "address": "Address",
+                                "membership_type": "Membership Type",
+                                "start_date": "Start Date",
+                                "end_date": "End Date",
+                            }
+                        )
+
+                        st.dataframe(
+                            df,
+                            use_container_width=True,
+                            hide_index=True,
+                        )
+
+                        col1, col2, col3 = st.columns(3)
+
+                        with col1:
+                            st.metric(
+                                "Total Memberships",
+                                data.get("total_records", 0),
+                            )
+
+                        with col2:
+                            st.metric(
+                                "Total Pages",
+                                data.get("total_pages", 0),
+                            )
+
+                        with col3:
+                            st.metric(
+                                "Current Page",
+                                data.get("current_page", 0),
+                            )
+
+                    else:
+                        st.warning("No memberships found.")
+                        data = {}
+
+                else:
+                    st.error(result.get("message", "Memberships not found."))
+                    data = {}
+
+            else:
+                st.error(
+                    f"Failed to fetch memberships. Status Code: {response.status_code}"
+                )
+                data = {}
+
+        except Exception as e:
+            st.error(f"Backend connection error: {e}")
+            data = {}
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        prev_col, center_col, next_col = st.columns([1, 2, 1])
+
+        with prev_col:
+            if st.button(
+                "⬅ Previous",
+                key="membership_prev",
+                use_container_width=True,
+            ):
+                if st.session_state.membership_page > 1:
+                    st.session_state.membership_page -= 1
+                    st.rerun()
+
+        with center_col:
+            st.markdown(
+                f"""
+                <div style="text-align:center;
+                            font-size:20px;
+                            font-weight:600;
+                            padding-top:8px;">
+                    Page {st.session_state.membership_page}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with next_col:
+            if st.button(
+                "Next ➝",
+                key="membership_next",
+                use_container_width=True,
+            ):
+                total_pages = data.get("total_pages", 1)
+
+                if st.session_state.membership_page < total_pages:
+                    st.session_state.membership_page += 1
+                    st.rerun()
 
 # tab 2: add book
 elif page == "Add Book":
@@ -917,4 +1373,291 @@ elif page == "Add Book":
     st.markdown("</div>", unsafe_allow_html=True)
 
 elif page == "Fines":
-    st.header("Fines")
+    if "fine_page" not in st.session_state:
+        st.session_state.fine_page = 1
+
+    st.markdown(
+        """
+            <div class="glass-card">
+                <div class="section-title">Fine Records</div>
+            """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2, col3 = st.columns([1, 1, 2])
+
+    with col1:
+        per_page = st.selectbox(
+            "Records Per Page",
+            options=[4, 8, 12, 16],
+            index=0,
+            key="fine_per_page",
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    params = {
+        "page": st.session_state.fine_page,
+        "per_page": per_page,
+    }
+
+    try:
+        response = requests.get(
+            f"{base_url}/transaction/fines",
+            params=params,
+        )
+
+        st.markdown(
+            """
+                <div class="glass-card">
+                    <div class="section-title">Fine Details</div>
+                """,
+            unsafe_allow_html=True,
+        )
+
+        if response.status_code == 200:
+
+            result = response.json()
+
+            if result.get("status") == "success":
+
+                data = result.get("data", {})
+
+                fines = data.get("fines", [])
+
+                if fines:
+
+                    df = pd.DataFrame(fines)
+
+                    df = df.rename(
+                        columns={
+                            "transaction_id": "Transaction ID",
+                            "member_id": "Member ID",
+                            "member_name": "Member Name",
+                            "phone_no": "Phone No",
+                            "book_id": "Book ID",
+                            "return_date": "Return Date",
+                            "fine_amount": "Fine Amount (₹)",
+                        }
+                    )
+
+                    st.dataframe(
+                        df,
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    with col1:
+                        st.metric(
+                            "Total Records",
+                            data.get("total_records", 0),
+                        )
+
+                    with col2:
+                        st.metric(
+                            "Total Pages",
+                            data.get("total_pages", 0),
+                        )
+
+                    with col3:
+                        st.metric(
+                            "Current Page",
+                            data.get("current_page", 0),
+                        )
+
+                    with col4:
+                        st.metric(
+                            "Total Fine",
+                            f"₹{data.get('total_fine_collected', 0)}",
+                        )
+
+                else:
+                    st.warning("No fine records found.")
+                    data = {}
+
+            else:
+                st.error(result.get("message", "Fine records not found."))
+                data = {}
+
+        else:
+            st.error(
+                f"Failed to fetch fine records. Status Code: {response.status_code}"
+            )
+            data = {}
+
+    except Exception as e:
+        st.error(f"Backend connection error: {e}")
+        data = {}
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    prev_col, center_col, next_col = st.columns([1, 2, 1])
+
+    with prev_col:
+        if st.button(
+            "⬅ Previous",
+            key="fine_prev",
+            use_container_width=True,
+        ):
+            if st.session_state.fine_page > 1:
+                st.session_state.fine_page -= 1
+                st.rerun()
+
+    with center_col:
+        st.markdown(
+            f"""
+                <div style="text-align:center;
+                            font-size:20px;
+                            font-weight:600;
+                            padding-top:8px;">
+                    Page {st.session_state.fine_page}
+                </div>
+                """,
+            unsafe_allow_html=True,
+        )
+
+    with next_col:
+        if st.button(
+            "Next ➝",
+            key="fine_next",
+            use_container_width=True,
+        ):
+            total_pages = data.get("total_pages", 1)
+
+            if st.session_state.fine_page < total_pages:
+                st.session_state.fine_page += 1
+                st.rerun()
+
+elif page == "Setting":
+    st.markdown("SETTING & OTHERS")
+    tab1, tab2 = st.tabs(["change password", "delete Admin & superadmin"])
+    with tab1:
+        st.markdown(
+            """
+            <div class="glass-card">
+                <div class="section-title">Change Password</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        username = st.text_input(
+            "Username",
+            key="change_username",
+        )
+
+        old_password = st.text_input(
+            "Old Password",
+            type="password",
+            key="old_password",
+        )
+
+        new_password = st.text_input(
+            "New Password",
+            type="password",
+            key="new_password",
+        )
+
+        confirm_password = st.text_input(
+            "Confirm New Password",
+            type="password",
+            key="confirm_password",
+        )
+
+        if st.button(
+            "Change Password",
+            key="change_password_btn",
+            use_container_width=True,
+        ):
+
+            if not username.strip():
+                st.warning("Please enter username.")
+
+            elif not old_password:
+                st.warning("Please enter old password.")
+
+            elif not new_password:
+                st.warning("Please enter new password.")
+
+            elif new_password != confirm_password:
+                st.error("New password and confirm password do not match.")
+
+            else:
+
+                payload = {
+                    "username": username.strip(),
+                    "old_password": old_password,
+                    "new_password": new_password,
+                }
+
+                try:
+                    response = requests.put(
+                        f"{base_url}/auth/change_password",
+                        json=payload,
+                    )
+
+                    result = response.json()
+
+                    if response.status_code == 200:
+
+                        st.success(
+                            result.get(
+                                "message",
+                                "Password changed successfully",
+                            )
+                        )
+
+                    else:
+                        st.error(
+                            result.get(
+                                "message",
+                                "Failed to change password",
+                            )
+                        )
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+    with tab2:
+        st.markdown(
+            """
+            <div class="glass-card">
+                <div class="section-title">Delete User</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        user_id = st.number_input(
+            "User ID",
+            min_value=1,
+            step=1,
+            key="delete_user_id",
+        )
+
+        if st.button(
+            "Delete User",
+            key="delete_user_btn",
+            use_container_width=True,
+        ):
+
+            try:
+                response = requests.delete(f"{base_url}/auth/delete/{int(user_id)}")
+
+                result = response.json()
+
+                if response.status_code == 200:
+                    st.success(result.get("message", "User deleted successfully"))
+
+                else:
+
+                    st.error(result.get("message", "Failed to delete user"))
+
+            except Exception as e:
+                st.error(f"Error: {e}")
+
+
+elif page == "Profile":
+    st.markdown("profile")
