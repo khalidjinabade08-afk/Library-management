@@ -88,6 +88,11 @@ def show_membership(page=1, per_page=4):
         memberships = []
 
         for membership in page_obj.items:
+            if membership.end_date < date.today():
+                membership.status = "expired"
+            else:
+                membership.status = "active"
+
             member = db.session.get(Member, membership.member_id)
 
             memberships.append(
@@ -99,8 +104,11 @@ def show_membership(page=1, per_page=4):
                     "membership_type": membership.membership_type,
                     "start_date": str(membership.start_date),
                     "end_date": str(membership.end_date),
+                    "status": membership.status,
                 }
             )
+
+        db.session.commit()
 
         return success_response(
             "Memberships found",
@@ -190,6 +198,7 @@ def get_all_member(page=1, per_page=4):
                     "name": member.name,
                     "address": member.address,
                     "phone no": member.phone_no,
+                    "created_at": str(member.created_at),
                     "membership start date": membership_start_date,
                     "membership end date": membership_end_date,
                     "membership status": membership_status,

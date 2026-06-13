@@ -1,5 +1,6 @@
 from database.db import db
-from datetime import date
+from datetime import datetime
+
 
 class Member(db.Model):
     __tablename__ = "member"
@@ -8,3 +9,4 @@ class Member(db.Model):
     name = db.Column(db.String(250), nullable=False)
     phone_no = db.Column(db.String(250), nullable=False)
     address = db.Column(db.String(250), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

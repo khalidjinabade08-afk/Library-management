@@ -54,77 +54,67 @@ page = st.session_state.page
 
 # --- Overview / Dashboard ---
 if page == "Overview":
-    # --- FIXED CSS FOR BLACK HEADERS ---
     st.markdown(
         """
-<style>
-    /* Main Application Background - White */
-    .stApp {
-        background-color: #FFFFFF;
-    }
+        <style>
 
-    /* Dashboard Subheader Styling - Forced Black Theme */
-    [data-testid="stHeaderBlock"] h2, 
-    [data-testid="stMarkdownContainer"] h2,
-    .stSubheader h2 {
-        color: #1E3A8A !important; 
-        font-weight: 800 !important;
-        font-size: 2rem !important;
-        border-bottom: 2px solid #E0E7FF; 
-        padding-bottom: 8px;
-    }
-    
-    /* Dashboard Metric Values */
-    [data-testid="stMetricValue"] {
-        font-size: 28px;
-        font-weight: bold;
-        color: #1E3A8A;
-    }
-    
-    /* Dashboard Metric Labels */
-    [data-testid="stMetricLabel"] {
-        font-size: 14px;
-        color: #475569;
-        font-weight: 500;
-    }
-    
-    /* Dashboard Metric Cards */
-    div[data-testid="stMetric"] {
-        background-color: #F1F5F9; 
-        padding: 15px;
-        border-radius: 12px;
-        border: 1px solid #E2E8F0;
-        margin-bottom: 10px;
-    }
-</style>
-    """,
+            .stApp {
+                background-color: white !important;
+            }
+
+            h1, h2, h3 {
+                color: black !important;
+            }
+
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 12px;
+            }
+
+            .stTabs [data-baseweb="tab"] {
+                background-color: white!important;
+                color: black !important;
+                border-radius: 10px !important;
+                padding: 10px 20px !important;
+                font-weight: 600 !important;
+                border: none !important;
+            }
+
+            .stTabs [aria-selected="true"] {
+                background-color: #077A7D !important;
+                color: white !important;
+            }
+
+            .stTabs [data-baseweb="tab-highlight"] {
+                background-color: transparent !important;
+            }
+
+        </style>
+""",
         unsafe_allow_html=True,
     )
-
-    # --- HOME / DASHBOARD CONTENT ---
-    st.subheader("Dashboard Overview")
+    st.markdown(
+        "<h3 style='color:black;'>Dashboard Overview</h3>", unsafe_allow_html=True
+    )
 
     # --- TABS CREATION ---
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["Books Summary", "member summary", "membership summry", "Transaction summary"]
+    tab1, tab2, tab3 = st.tabs(
+        ["Books Summary", "member & membership summary", "Transaction summary"]
     )
 
     with tab1:
         st.markdown(
             """
         <style>
-            /* Books Metric Values - Deep Teal (#00AAA6) */
             [data-testid="stMetricValue"] {
                 font-size: 26px;
+                font-weight: 600 !important;
                 color: #00AAA6;
             }
         
-            /* Books Metric Labels - Neutral Muted Gray (#737373) */
             [data-testid="stMetricLabel"] {
                 color: #737373;
             }
         
-            /* Books Metric Cards - Light Gray Background (#F5F5F5) */
             div[data-testid="stMetric"] {
                 background-color: #F5F5F5;
                 padding: 15px;
@@ -151,38 +141,41 @@ if page == "Overview":
                 books = data.get("title", [])
                 if books:
                     df = pd.DataFrame(books)
-                    category_counts = pd.Series(dtype=int)  # safe initialization
-                    if "category" in df.columns:
-                        df["category"] = df["category"].replace("", pd.NA)
-                        category_counts = df["category"].value_counts().sort_index()
+                    category_counts = pd.Series(dtype=int)
+                    if "category" in df.columns and "quantity" in df.columns:
+                        df["category"] = df["category"].fillna("Unknown")
+                        category_counts = (
+                            df.groupby("category")["quantity"].sum().sort_index()
+                        )
 
-                    col1, col2 = st.columns([1, 2])
+                    col1, col2, col3 = st.columns(3)
                     with col1:
                         st.metric("Total Books", data.get("total records", len(df)))
+                    with col2:
                         st.metric("Available Books", data.get("available books", 0))
+                    with col3:
                         st.metric("Total Categories", len(category_counts))
 
-                    with col2:
-                        st.markdown(
-                            "<p class='category-title'>Book Distribution by Category</p>",
-                            unsafe_allow_html=True,
+                    st.divider()
+
+                    st.subheader("Book Distribution by Category")
+
+                    if not category_counts.empty:
+                        fig, ax = plt.subplots(figsize=(6, 4), facecolor="none")
+                        colors = ["#00AAA6", "#C0FFC8", "#F5F5F5", "#737373"]
+                        ax.pie(
+                            category_counts,
+                            labels=category_counts.index,
+                            autopct="%1.1f%%",
+                            startangle=140,
+                            colors=colors[: len(category_counts)],
+                            textprops={"color": "#737373"},
+                            wedgeprops={"edgecolor": "white", "linewidth": 2},
                         )
-                        if not category_counts.empty:
-                            fig, ax = plt.subplots(figsize=(6, 4), facecolor="none")
-                            colors = ["#00AAA6", "#C0FFC8", "#F5F5F5", "#737373"]
-                            ax.pie(
-                                category_counts,
-                                labels=category_counts.index,
-                                autopct="%1.1f%%",
-                                startangle=140,
-                                colors=colors[: len(category_counts)],
-                                textprops={"color": "#737373"},
-                                wedgeprops={"edgecolor": "white", "linewidth": 2},
-                            )
-                            ax.axis("equal")
-                            st.pyplot(fig)
-                        else:
-                            st.info("NO category data found in the records.")
+                        ax.axis("equal")
+                        st.pyplot(fig)
+                    else:
+                        st.info("NO category data found in the records.")
                 else:
                     st.warning("No books available in the library yet.")
             else:
@@ -193,13 +186,139 @@ if page == "Overview":
             st.error(f"Error generating books summary: {e}")
 
     with tab2:
-        st.subheader("Members Summary")
+        st.subheader("Member & Membership Summary")
 
-    # Tab 3: Memberships Summary
+        try:
+            member_res = requests.get(
+                f"{member_url}/show", params={"page": 1, "per_page": 1000}
+            )
+            membership_res = requests.get(
+                f"{member_url}/membership/show", params={"page": 1, "per_page": 1000}
+            )
+
+            total_members = 0
+            members_data = []
+
+            if member_res.status_code == 200:
+                mem_json = member_res.json()
+                total_members = mem_json.get("total no", 0)
+                members_data = mem_json.get("Members", [])
+
+            if membership_res.status_code == 200:
+                res_json = membership_res.json()
+                data = res_json.get("data", res_json)
+                memberships = data.get("memberships", [])
+
+                if memberships:
+                    df_m = pd.DataFrame(memberships)
+                    active_count = (
+                        (df_m["status"] == "active").sum()
+                        if "status" in df_m.columns
+                        else 0
+                    )
+                    expired_count = (
+                        (df_m["status"] == "expired").sum()
+                        if "status" in df_m.columns
+                        else 0
+                    )
+                    type_counts = (
+                        df_m["membership_type"].value_counts()
+                        if "membership_type" in df_m.columns
+                        else pd.Series(dtype=int)
+                    )
+
+                    col1, col2 = st.columns([1, 2])
+
+                    with col1:
+                        st.metric("Total Members", total_members)
+                        st.metric("Active Memberships", int(active_count))
+                        st.metric("Expired Memberships", int(expired_count))
+
+                    with col2:
+                        st.markdown(
+                            "<p class='category-title'>Membership Plans Distribution</p>",
+                            unsafe_allow_html=True,
+                        )
+                        if not type_counts.empty:
+                            fig, ax = plt.subplots(figsize=(6, 4), facecolor="none")
+                            colors = ["#077A7D", "#00AAA6", "#C0FFC8", "#737373"]
+
+                            ax.pie(
+                                type_counts,
+                                labels=type_counts.index,
+                                autopct="%1.1f%%",
+                                startangle=140,
+                                colors=colors[: len(type_counts)],
+                                textprops={"color": "#737373"},
+                                wedgeprops={"edgecolor": "white", "linewidth": 2},
+                            )
+                            ax.axis("equal")
+                            st.pyplot(fig)
+                        else:
+                            st.info("No membership type data found to chart.")
+                else:
+                    st.metric("Total Members", total_members)
+                    st.info("No active memberships in the system yet.")
+            else:
+                st.error(
+                    f"Failed to load memberships. Status Code: {membership_res.status_code}"
+                )
+
+            st.divider()
+            st.markdown(
+                "<p class='category-title'>Members Added Monthly</p>",
+                unsafe_allow_html=True,
+            )
+
+            if members_data:
+                df_members = pd.DataFrame(members_data)
+
+                if (
+                    "created_at" in df_members.columns
+                    and not df_members["created_at"].isnull().all()
+                ):
+                    df_members["created_at"] = pd.to_datetime(
+                        df_members["created_at"], errors="coerce"
+                    )
+                    df_members["Month"] = df_members["created_at"].dt.strftime("%Y-%m")
+
+                    monthly_data = df_members.groupby("Month").size().sort_index()
+
+                    if not monthly_data.empty:
+                        fig2, ax2 = plt.subplots(figsize=(10, 4), facecolor="none")
+
+                        bars = ax2.bar(
+                            monthly_data.index,
+                            monthly_data.values,
+                            color="#00AAA6",
+                            width=0.5,
+                        )
+
+                        ax2.tick_params(axis="x", colors="#737373", rotation=45)
+                        ax2.tick_params(axis="y", colors="#737373")
+                        ax2.set_ylabel(
+                            "New Members", color="#737373", fontweight="bold"
+                        )
+
+                        for spine in ["top", "right"]:
+                            ax2.spines[spine].set_visible(False)
+                        ax2.spines["bottom"].set_color("#E5E5E5")
+                        ax2.spines["left"].set_color("#E5E5E5")
+
+                        st.pyplot(fig2)
+                    else:
+                        st.info("Not enough date information to plot monthly trends.")
+                else:
+                    st.warning(
+                        "Date information is missing. Make sure you updated the Flask backend to send 'created_at'."
+                    )
+            else:
+                st.info("No members available to chart.")
+
+        except Exception as e:
+            st.error(f"Error generating summary: {e}")
+
     with tab3:
-        st.subheader("Memberships Summary")
-
-    with tab4:
         st.subheader("Transaction")
 
 # --- Books Page ---
