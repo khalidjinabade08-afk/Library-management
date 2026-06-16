@@ -1,4 +1,5 @@
 from models.book_model import book
+from models.transaction_model import Transaction
 from sqlalchemy import select, func
 from database.db import db
 from flask import session
@@ -50,7 +51,7 @@ def get_all_book(page=1, per_page=4):
                 }
             )
 
-        total_available = db.session.query(func.sum(book.available_quantity)).scalar()
+        total_available = book.query.filter(book.available_quantity > 0).count()
 
         return success_response(
             {
@@ -140,6 +141,8 @@ def delete_book(book_id):
 
         if not Book:
             return error_response("book not found")
+
+        Transaction.query.filter_by(book_id=book_id).delete()
         db.session.delete(Book)
         db.session.commit()
 

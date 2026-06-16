@@ -160,6 +160,7 @@ class SearchMember(Resource):
 class deleteMember(Resource):
     # @role_required(["superadmin"])
     def delete(self, member_id):
+        print(member_id)
         return delete_member(member_id)
 
 

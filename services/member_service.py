@@ -1,5 +1,6 @@
 from models.member_model import Member
 from models.membership_model import Membership
+from models.transaction_model import Transaction
 from sqlalchemy import select
 from database.db import db
 from flask import session
@@ -282,16 +283,14 @@ def update_member(member_id, data):
 
 def delete_member(member_id):
     try:
+        print(member_id)
         member = db.session.get(Member, member_id)
 
         if not member:
             return error_response("member not found")
 
-        memberships = Membership.query.filter_by(member_id=member.id).all()
-
-        for membership in memberships:
-            db.session.delete(membership)
-        db.session.flush()
+        Transaction.query.filter_by(member_id=member_id).delete()
+        Membership.query.filter_by(member_id=member_id).delete()
 
         db.session.delete(member)
         db.session.commit()

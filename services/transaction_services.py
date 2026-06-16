@@ -142,7 +142,7 @@ def show_fines(page=1, per_page=4):
     try:
         page_obj = (
             Transaction.query.filter(Transaction.fine_amount > 0)
-            .order_by(Transaction.id.desc())
+            .order_by(Transaction.id.asc())
             .paginate(
                 page=page,
                 per_page=per_page,

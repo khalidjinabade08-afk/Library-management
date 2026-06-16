@@ -8,88 +8,228 @@ base_url = "http://127.0.0.1:5501"
 book_url = f"{base_url}/book"
 member_url = f"{base_url}/member"
 
+st.set_page_config(page_title="Bookary Library", page_icon="📚", layout="wide")
+
+# ---------------- CUSTOM CSS ----------------
+st.markdown(
+    """
+    <style>
+
+    /* Main Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(
+            180deg,
+            #0f172a 0%,
+            #1e293b 50%,
+            #334155 100%
+        );
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Sidebar content */
+    [data-testid="stSidebar"] * {
+        color: white;
+    }
+
+    /* Logo Section */
+    .library-logo {
+        text-align: center;
+        padding: 15px 10px;
+        margin-bottom: 15px;
+        border-radius: 15px;
+        background: linear-gradient(
+            135deg,
+            #3b82f6,
+            #8b5cf6
+        );
+        box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+    }
+
+    .library-title {
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .library-subtitle {
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+    /* Section Headers */
+    .section-header {
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    /* Hover Effect */
+    .stButton > button:hover {
+        background: linear-gradient(
+            90deg,
+            #3b82f6,
+            #8b5cf6
+        );
+        border: none;
+        transform: translateX(4px);
+        box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+    }
+
+    /* Divider */
+    hr {
+        border: none;
+        height: 1px;
+        background: rgba(255,255,255,0.1);
+    }
+
+    /* Current Page Badge */
+    .current-page {
+        background: rgba(59,130,246,0.2);
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 20px;
+        border: 1px solid rgba(59,130,246,0.4);
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ---------------- SESSION STATE ----------------
 if "page" not in st.session_state:
     st.session_state.page = "Overview"
 
-# Sidebar Navigation
+# ---------------- SIDEBAR ----------------
 with st.sidebar:
-    st.title("Bookary 📖")
-    st.markdown("MAIN MENU")
 
-    if st.button("Overview", use_container_width=True):
+    # Logo Area
+    st.markdown(
+        """
+    <div class="library-logo">
+        <div class="library-title">📖 Bookary</div>
+        <div class="library-subtitle">
+            Library Management System
+        </div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # MAIN MENU
+    st.markdown('<div class="section-header">MAIN MENU</div>', unsafe_allow_html=True)
+
+    if st.button("🏠 Overview", use_container_width=True):
         st.session_state.page = "Overview"
 
-    if st.button("Books", use_container_width=True):
-        st.session_state.page = "books"
+    if st.button("📚 Books", use_container_width=True):
+        st.session_state.page = "Books"
 
-    if st.button("Library Activities", use_container_width=True):
-        st.session_state.page = "transaction"
+    if st.button("🔄 Library Activities", use_container_width=True):
+        st.session_state.page = "Transaction"
 
-    if st.button("Members", use_container_width=True):
-        st.session_state.page = "member"
+    if st.button("👥 Members", use_container_width=True):
+        st.session_state.page = "Member"
 
     st.divider()
 
-    st.markdown("MANAGEMENT")
-    if st.button("Membership", use_container_width=True):
-        st.session_state.page = "management"
+    # MANAGEMENT
+    st.markdown('<div class="section-header">MANAGEMENT</div>', unsafe_allow_html=True)
 
-    if st.button("Add Books", use_container_width=True):
+    if st.button("🎫 Membership", use_container_width=True):
+        st.session_state.page = "Management"
+
+    if st.button("➕ Add Books", use_container_width=True):
         st.session_state.page = "Add Book"
 
-    if st.button("fines", use_container_width=True):
+    if st.button("💰 Fines", use_container_width=True):
         st.session_state.page = "Fines"
 
     st.divider()
 
-    st.markdown("SETTING & OTHERS")
-    if st.button("Setting", use_container_width=True):
+    # SETTINGS
+    st.markdown(
+        '<div class="section-header">SETTINGS & OTHERS</div>', unsafe_allow_html=True
+    )
+
+    if st.button("⚙️ Settings", use_container_width=True):
         st.session_state.page = "Setting"
 
-    if st.button("Profile", use_container_width=True):
+    if st.button("👤 Profile", use_container_width=True):
         st.session_state.page = "Profile"
 
+    # Current Page Indicator
+    st.markdown(
+        f"""
+        <div class="current-page">
+            <strong>Current Page</strong><br>
+            {st.session_state.page}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 page = st.session_state.page
+
+# ---------------- DEMO PAGE ----------------
+st.title(page)
+st.write(f"Welcome to the **{page}** page.")
 
 # --- Overview / Dashboard ---
 if page == "Overview":
     st.markdown(
         """
-        <style>
+            <style>
 
-            .stApp {
-                background-color: white !important;
-            }
+                .stApp {
+                    background-color: white !important;
+                }
 
-            h1, h2, h3 {
-                color: black !important;
-            }
+                h1, h2, h3 {
+                    color: black !important;
+                }
 
-            .stTabs [data-baseweb="tab-list"] {
-                gap: 12px;
-            }
+                .stTabs [data-baseweb="tab-list"] {
+                    gap: 12px;
+                }
 
-            .stTabs [data-baseweb="tab"] {
-                background-color: white!important;
-                color: black !important;
-                border-radius: 10px !important;
-                padding: 10px 20px !important;
-                font-weight: 600 !important;
-                border: none !important;
-            }
+                .stTabs [data-baseweb="tab"] {
+                    background-color: white!important;
+                    color: black !important;
+                    border-radius: 10px !important;
+                    padding: 10px 20px !important;
+                    font-weight: 600 !important;
+                    border: none !important;
+                }
 
-            .stTabs [aria-selected="true"] {
-                background-color: #077A7D !important;
-                color: white !important;
-            }
+                .stTabs [aria-selected="true"] {
+                    background-color: #077A7D !important;
+                    color: white !important;
+                }
 
-            .stTabs [data-baseweb="tab-highlight"] {
-                background-color: transparent !important;
-            }
+                .stTabs [data-baseweb="tab-highlight"] {
+                    background-color: transparent !important;
+                }
 
-        </style>
-""",
+            </style>
+        """,
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -104,30 +244,30 @@ if page == "Overview":
     with tab1:
         st.markdown(
             """
-        <style>
-            [data-testid="stMetricValue"] {
-                font-size: 26px;
-                font-weight: 600 !important;
-                color: #00AAA6;
-            }
-        
-            [data-testid="stMetricLabel"] {
-                color: #737373;
-            }
-        
-            div[data-testid="stMetric"] {
-                background-color: #F5F5F5;
-                padding: 15px;
-                border-radius: 8px;
-                border: 1px solid #E5E5E5;
-            }
-        
-            .category-title {
-                color: #737373;
-                font-weight: bold;
-            }
-        </style>
-        """,
+    <style>
+        [data-testid="stMetricValue"] {
+            font-size: 26px;
+            font-weight: 600 !important;
+            color: #00AAA6;
+        }
+    
+        [data-testid="stMetricLabel"] {
+            color: #737373;
+        }
+    
+        div[data-testid="stMetric"] {
+            background-color: #F5F5F5;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #E5E5E5;
+        }
+    
+        .category-title {
+            color: #737373;
+            font-weight: bold;
+        }
+    </style>
+    """,
             unsafe_allow_html=True,
         )
 
@@ -139,20 +279,38 @@ if page == "Overview":
             if response.status_code == 200:
                 data = response.json().get("message", {})
                 books = data.get("title", [])
+
                 if books:
                     df = pd.DataFrame(books)
                     category_counts = pd.Series(dtype=int)
+
                     if "category" in df.columns and "quantity" in df.columns:
                         df["category"] = df["category"].fillna("Unknown")
                         category_counts = (
                             df.groupby("category")["quantity"].sum().sort_index()
                         )
 
+                    total_books_count = data.get("total records", len(df))
+
+                    if "status" in df.columns:
+                        available_books_count = len(df[df["status"] == "Available"])
+                    elif "borrowed" in df.columns:
+                        available_books_count = total_books_count - data.get(
+                            "borrowed", 0
+                        )
+                    else:
+                        api_available = data.get("available books", 0)
+                        available_books_count = (
+                            api_available
+                            if api_available <= total_books_count
+                            else total_books_count
+                        )
+
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        st.metric("Total Books", data.get("total records", len(df)))
+                        st.metric("Total Books", total_books_count)
                     with col2:
-                        st.metric("Available Books", data.get("available books", 0))
+                        st.metric("Available Books", available_books_count)
                     with col3:
                         st.metric("Total Categories", len(category_counts))
 
@@ -162,7 +320,7 @@ if page == "Overview":
 
                     if not category_counts.empty:
                         fig, ax = plt.subplots(figsize=(6, 4), facecolor="none")
-                        colors = ["#00AAA6", "#C0FFC8", "#F5F5F5", "#737373"]
+                        colors = ["#00AAA6", "#C0FFC8", "#F5F5F5", "#C0FCF8"]
                         ax.pie(
                             category_counts,
                             labels=category_counts.index,
@@ -235,13 +393,13 @@ if page == "Overview":
                         st.metric("Expired Memberships", int(expired_count))
 
                     with col2:
+                        st.markdown('<div class="chart-card">', unsafe_allow_html=True)
                         st.markdown(
                             "<p class='category-title'>Membership Plans Distribution</p>",
                             unsafe_allow_html=True,
                         )
                         if not type_counts.empty:
-                            fig, ax = plt.subplots(figsize=(6, 4), facecolor="none")
-                            colors = ["#077A7D", "#00AAA6", "#C0FFC8", "#737373"]
+                            fig, ax = plt.subplots(figsize=(3, 3), facecolor="none")
 
                             ax.pie(
                                 type_counts,
@@ -249,13 +407,20 @@ if page == "Overview":
                                 autopct="%1.1f%%",
                                 startangle=140,
                                 colors=colors[: len(type_counts)],
-                                textprops={"color": "#737373"},
-                                wedgeprops={"edgecolor": "white", "linewidth": 2},
+                                radius=0.3,
+                                labeldistance=1.05,
+                                pctdistance=0.7,
+                                textprops={"color": "#737373", "fontsize": 6},
+                                wedgeprops={"edgecolor": "white", "linewidth": 1.5},
                             )
+
                             ax.axis("equal")
+                            plt.tight_layout()
+
                             st.pyplot(fig)
                         else:
                             st.info("No membership type data found to chart.")
+                        st.markdown("</div>", unsafe_allow_html=True)
                 else:
                     st.metric("Total Members", total_members)
                     st.info("No active memberships in the system yet.")
@@ -265,6 +430,8 @@ if page == "Overview":
                 )
 
             st.divider()
+
+            st.markdown('<div class="chart-card">', unsafe_allow_html=True)
             st.markdown(
                 "<p class='category-title'>Members Added Monthly</p>",
                 unsafe_allow_html=True,
@@ -315,15 +482,226 @@ if page == "Overview":
             else:
                 st.info("No members available to chart.")
 
+            st.markdown("</div>", unsafe_allow_html=True)
+
         except Exception as e:
             st.error(f"Error generating summary: {e}")
 
     with tab3:
-        st.subheader("Transaction")
+        st.subheader("Transaction Summary")
 
+        try:
+            # Fetch a large batch of transactions for dashboard aggregation
+            trans_res = requests.get(
+                f"{base_url}/transaction/show", params={"page": 1, "per_page": 1000}
+            )
+
+            if trans_res.status_code == 200:
+                res_json = trans_res.json()
+                data = res_json.get("data", {})
+                transactions = data.get("transaction", [])
+
+                if transactions:
+                    df_t = pd.DataFrame(transactions)
+
+                    # Convert status values to lowercase to prevent capitalization mismatches (e.g., 'Issued' vs 'issued')
+                    if "status" in df_t.columns:
+                        df_t["status_clean"] = (
+                            df_t["status"].astype(str).str.strip().str.lower()
+                        )
+                    else:
+                        df_t["status_clean"] = ""
+
+                    # 1. Calculate Metrics Safely
+                    total_trans = len(df_t)
+                    issued_count = (df_t["status_clean"] == "issued").sum()
+                    returned_count = (df_t["status_clean"] == "returned").sum()
+
+                    # Safely calculate total fines collected
+                    if "fine_amount" in df_t.columns:
+                        df_t["fine_amount"] = pd.to_numeric(
+                            df_t["fine_amount"], errors="coerce"
+                        ).fillna(0)
+                        total_fines = df_t["fine_amount"].sum()
+                    else:
+                        total_fines = 0.0
+
+                    # --- TOP ROW: Metrics ---
+                    col1, col2, col3, col4 = st.columns(4)
+                    with col1:
+                        st.metric("Total Transactions", total_trans)
+                    with col2:
+                        st.metric("Currently Issued", int(issued_count))
+                    with col3:
+                        st.metric("Books Returned", int(returned_count))
+                    with col4:
+                        st.metric("Total Fines Collected", f"₹ {total_fines:,.2f}")
+
+                    st.divider()
+
+                    # --- MIDDLE ROW: Charts ---
+                    col1, col2 = st.columns([1, 2])
+
+                    with col1:
+                        st.markdown('<div class="chart-card">', unsafe_allow_html=True)
+                        st.markdown(
+                            "<p class='category-title'>Transaction Status</p>",
+                            unsafe_allow_html=True,
+                        )
+
+                        # Use the raw status column for nicer title-case labels in the pie chart
+                        status_counts = (
+                            df_t["status"].value_counts()
+                            if "status" in df_t.columns
+                            else pd.Series(dtype=int)
+                        )
+
+                        if not status_counts.empty:
+                            fig, ax = plt.subplots(figsize=(5, 5), facecolor="none")
+
+                            ax.plot(
+                                status_counts.index.str.title(),
+                                status_counts.values,
+                                color="#00AAA6",
+                                marker="o",
+                                linestyle="-",
+                                linewidth=2,
+                                markersize=8,
+                            )
+
+                            ax.tick_params(axis="x", colors="#737373")
+                            ax.tick_params(axis="y", colors="#737373")
+                            ax.set_ylabel(
+                                "Total Count",
+                                color="#737373",
+                                fontweight="bold",
+                            )
+
+                            # Clean up the chart borders (spines)
+                            for spine in ["top", "right"]:
+                                ax.spines[spine].set_visible(False)
+                            ax.spines["bottom"].set_color("#E5E5E5")
+                            ax.spines["left"].set_color("#E5E5E5")
+
+                            # Optional: set y-axis to start at 0 so the scale makes sense
+                            ax.set_ylim(bottom=0)
+
+                            st.pyplot(fig)
+                        else:
+                            st.info("No status data available to chart.")
+
+                        st.markdown("</div>", unsafe_allow_html=True)
+
+                    with col2:
+                        st.markdown('<div class="chart-card">', unsafe_allow_html=True)
+                        st.markdown(
+                            "<p class='category-title'>Books Issued Monthly</p>",
+                            unsafe_allow_html=True,
+                        )
+
+                        if (
+                            "issue_date" in df_t.columns
+                            and not df_t["issue_date"].isnull().all()
+                        ):
+                            df_t["issue_date_dt"] = pd.to_datetime(
+                                df_t["issue_date"], errors="coerce"
+                            )
+                            df_t["Month"] = df_t["issue_date_dt"].dt.strftime("%Y-%m")
+
+                            monthly_issues = df_t.groupby("Month").size().sort_index()
+
+                            if not monthly_issues.empty:
+                                fig2, ax2 = plt.subplots(
+                                    figsize=(8, 4), facecolor="none"
+                                )
+
+                                ax2.bar(
+                                    monthly_issues.index,
+                                    monthly_issues.values,
+                                    color="#077A7D",
+                                    width=0.5,
+                                )
+
+                                ax2.tick_params(axis="x", colors="#737373", rotation=45)
+                                ax2.tick_params(axis="y", colors="#737373")
+                                ax2.set_ylabel(
+                                    "Total Books Issued",
+                                    color="#737373",
+                                    fontweight="bold",
+                                )
+
+                                for spine in ["top", "right"]:
+                                    ax2.spines[spine].set_visible(False)
+                                ax2.spines["bottom"].set_color("#E5E5E5")
+                                ax2.spines["left"].set_color("#E5E5E5")
+
+                                st.pyplot(fig2)
+                            else:
+                                st.info(
+                                    "Not enough date information to plot monthly trends."
+                                )
+                        else:
+                            st.info("No issue dates recorded yet.")
+
+                        st.markdown("</div>", unsafe_allow_html=True)
+
+                    st.divider()
+                    st.markdown(
+                        "<p class='category-title'>Recent Activities</p>",
+                        unsafe_allow_html=True,
+                    )
+
+                    if "id" in df_t.columns:
+                        df_recent = (
+                            df_t.sort_values(by="id", ascending=False).head(5).copy()
+                        )
+
+                        for col in ["issue_date", "due_date", "return_date"]:
+                            if col in df_recent.columns:
+                                df_recent[col] = (
+                                    pd.to_datetime(df_recent[col], errors="coerce")
+                                    .dt.strftime("%Y-%m-%d")
+                                    .fillna("-")
+                                )
+
+                        df_recent = df_recent.rename(
+                            columns={
+                                "id": "Transaction ID",
+                                "member_id": "Member ID",
+                                "book_id": "Book ID",
+                                "issue_date": "Issue Date",
+                                "due_date": "Due Date",
+                                "return_date": "Return Date",
+                                "fine_amount": "Fine (₹)",
+                                "status": "Status",
+                            }
+                        )
+
+                        drop_cols = ["Month", "status_clean", "issue_date_dt"]
+                        df_recent = df_recent.drop(
+                            columns=[c for c in drop_cols if c in df_recent.columns],
+                            errors="ignore",
+                        )
+
+                        # Render a clean, scrollable table
+                        st.dataframe(
+                            df_recent, use_container_width=True, hide_index=True
+                        )
+                    else:
+                        st.info("Could not load recent activities data.")
+
+                else:
+                    st.info("No transactions recorded in the library yet.")
+
+            else:
+                st.error(
+                    f"Failed to load transactions. Status Code: {trans_res.status_code}"
+                )
+
+        except Exception as e:
+            st.error(f"Error generating transaction summary: {e}")
 # --- Books Page ---
-elif page == "books":
-    st.title("Books")
+elif page == "Books":
     tab1, tab2, tab3, tab4 = st.tabs(
         ["View Books", "search book", "Update Book", "Delete Book"]
     )
@@ -351,6 +729,8 @@ elif page == "books":
         st.markdown("</div>", unsafe_allow_html=True)
 
         params = {"page": st.session_state.book_page, "per_page": per_page}
+
+        data = {}
 
         try:
             response = requests.get(f"{book_url}/show", params=params)
@@ -641,8 +1021,7 @@ elif page == "books":
             except Exception as e:
                 st.error(f"Deletion error: {e}")
 
-elif page == "transaction":
-    st.title("Library Activities")
+elif page == "Transaction":
 
     tab1, tab2, tab3 = st.tabs(["issue book", "return book", "show transaction"])
 
@@ -829,10 +1208,8 @@ elif page == "transaction":
 
         except Exception as e:
             st.error(f"Error: {e}")
-
-
 # --- Members Page ---
-elif page == "member":
+elif page == "Member":
     st.title("Member")
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
@@ -1156,7 +1533,7 @@ elif page == "member":
             except Exception as e:
                 st.error(f"Deletion payload error: {e}")
 
-elif page == "management":
+elif page == "Management":
     st.header("Membership Management")
     tab1, tab2, tab3 = st.tabs(
         ["Add Membership", "search membership", "Membership List"]
@@ -1439,7 +1816,6 @@ elif page == "management":
 
 # tab 2: add book
 elif page == "Add Book":
-    st.title("Add New Book")
     st.markdown(
         """
             <div class="glass-card">
@@ -1650,7 +2026,6 @@ elif page == "Fines":
                 st.rerun()
 
 elif page == "Setting":
-    st.markdown("SETTING & OTHERS")
     tab1, tab2 = st.tabs(["change password", "delete Admin & superadmin"])
     with tab1:
         st.markdown(
@@ -1776,7 +2151,6 @@ elif page == "Setting":
 
             except Exception as e:
                 st.error(f"Error: {e}")
-
 
 elif page == "Profile":
     st.markdown("profile")
