@@ -2124,25 +2124,3 @@ elif page == "Setting":
 
 elif page == "Profile":
     st.markdown("profile")
-
-"""recreate this with following instructions:
-Please design the UI based on the following exact specifications:
-1. Overall Aesthetic & Color Theory
-
-* Theme: "Modern Academic." Crisp, clean, and professional.
-* Background (Primary): Soft off-white or light cool-gray (`#F8F9FA`) to reduce eye strain during long shifts.
-* Containers/Cards: Pure white (`#FFFFFF`) to create distinct content zones.
-* Sidebar/Navigation (Secondary): Deep navy blue (`#1E293B`) or rich slate to anchor the layout and provide high contrast.
-* Accents & Calls to Action: Muted emerald green (`#10B981`) for success/add actions, and a warm amber (`#F59E0B`) for warnings or overdue notices.
-* Typography: A highly legible, modern sans-serif font like 'Inter' or 'Roboto'. Use dark charcoal (`#334155`) for primary text, never pure black.
-2. Layout Architecture
-
-* Left Sidebar (Fixed): Clean vertical navigation. Should include subtle, minimalist icons for: Dashboard, Book Catalog, Member Directory, Issue/Return Desk, and Settings. The active tab should be highlighted with the accent color.
-* Top Header: A global search bar prominent in the center (to search books by ISBN/Title instantly), breadcrumb navigation on the left, and an admin profile/notification bell on the right.
-* Main Content Canvas: A spacious grid layout with generous padding (at least 2rem) and a slight gray background to make the white content cards pop.
-3. Core UI Components
-
-* Metric Dashboard (Top Row): 3-4 prominent "Stat Cards" displaying total books, active members, overdue returns, and today's circulation. These cards should have a very soft, diffused drop shadow (`box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05)`) and rounded corners (`border-radius: 12px`).
-* Book Catalog View: A clean data table or grid of book cards. Each row/card must display the book cover thumbnail, Title, Author, ISBN, and a color-coded availability badge (Green = Available, Red = Checked Out).
-* Action Buttons: Smooth, pill-shaped or softly rounded buttons. Primary actions (like "Issue Book") should be solid accent colors. Secondary actions (like "Edit") should be outlined. All buttons must have a subtle `transform: translateY(-2px)` hover effect.
-* Inputs & Forms: Search bars and form fields should have light gray borders that transition to a glowing accent-color outline when clicked/focused."""
