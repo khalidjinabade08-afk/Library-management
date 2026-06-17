@@ -14,98 +14,450 @@ st.set_page_config(page_title="Bookary Library", page_icon="📚", layout="wide"
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
 
-    /* Main Sidebar */
+    /* ===== GLOBAL RESET & BASE ===== */
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ===== MAIN APP BACKGROUND ===== */
+    .stApp {
+        background: #0a0f1e;
+        color: #e2e8f0;
+    }
+
+    /* ===== SIDEBAR ===== */
     [data-testid="stSidebar"] {
-        background: linear-gradient(
-            180deg,
-            #0f172a 0%,
-            #1e293b 50%,
-            #334155 100%
-        );
-        border-right: 1px solid rgba(255,255,255,0.1);
+        background: linear-gradient(180deg, #080d1a 0%, #0f172a 40%, #111827 100%);
+        border-right: 1px solid rgba(59,130,246,0.15);
     }
 
-    /* Sidebar content */
     [data-testid="stSidebar"] * {
-        color: white;
+        color: #cbd5e1 !important;
     }
 
-    /* Logo Section */
+    /* ===== LOGO BLOCK ===== */
     .library-logo {
         text-align: center;
-        padding: 15px 10px;
-        margin-bottom: 15px;
-        border-radius: 15px;
-        background: linear-gradient(
-            135deg,
-            #3b82f6,
-            #8b5cf6
-        );
-        box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+        padding: 20px 12px 16px;
+        margin-bottom: 18px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 50%, #7c3aed 100%);
+        box-shadow: 0 8px 32px rgba(79,70,229,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .library-logo::before {
+        content: '';
+        position: absolute;
+        top: -40%;
+        left: -40%;
+        width: 180%;
+        height: 180%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+        pointer-events: none;
     }
 
     .library-title {
-        font-size: 30px;
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
         font-weight: 700;
-        margin-bottom: 5px;
+        color: #ffffff !important;
+        letter-spacing: -0.5px;
+        margin-bottom: 4px;
     }
 
     .library-subtitle {
-        font-size: 13px;
-        opacity: 0.9;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.75) !important;
     }
 
-    /* Section Headers */
+    /* ===== SIDEBAR SECTION LABELS ===== */
     .section-header {
-        color: #94a3b8;
-        font-size: 12px;
+        color: #475569 !important;
+        font-size: 10px;
         font-weight: 700;
-        letter-spacing: 1px;
-        margin-top: 15px;
-        margin-bottom: 5px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin: 18px 0 6px 4px;
+        display: block;
     }
 
-    /* Buttons */
-    .stButton > button {
+    /* ===== SIDEBAR NAV BUTTONS ===== */
+    [data-testid="stSidebar"] .stButton > button {
         width: 100%;
-        background: rgba(255,255,255,0.05);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.08);
+        background: transparent;
+        color: #94a3b8 !important;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: left;
+        transition: all 0.2s ease;
+        margin-bottom: 2px;
+    }
+
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: linear-gradient(90deg, rgba(79,70,229,0.18), rgba(124,58,237,0.10));
+        color: #e2e8f0 !important;
+        border-color: rgba(79,70,229,0.35);
+        transform: translateX(3px);
+        box-shadow: 0 0 0 0;
+    }
+
+    [data-testid="stSidebar"] .stButton > button:focus {
+        background: linear-gradient(90deg, rgba(79,70,229,0.25), rgba(124,58,237,0.15));
+        color: #ffffff !important;
+        border-color: rgba(79,70,229,0.5);
+        box-shadow: none;
+    }
+
+    /* ===== DIVIDER ===== */
+    hr {
+        border: none !important;
+        height: 1px !important;
+        background: linear-gradient(90deg, transparent, rgba(79,70,229,0.3), transparent) !important;
+        margin: 12px 0 !important;
+    }
+
+    /* ===== CURRENT PAGE BADGE ===== */
+    .current-page {
+        background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(124,58,237,0.10));
+        border: 1px solid rgba(79,70,229,0.3);
         border-radius: 12px;
         padding: 12px;
-        font-size: 15px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    /* Hover Effect */
-    .stButton > button:hover {
-        background: linear-gradient(
-            90deg,
-            #3b82f6,
-            #8b5cf6
-        );
-        border: none;
-        transform: translateX(4px);
-        box-shadow: 0 4px 15px rgba(59,130,246,0.4);
-    }
-
-    /* Divider */
-    hr {
-        border: none;
-        height: 1px;
-        background: rgba(255,255,255,0.1);
-    }
-
-    /* Current Page Badge */
-    .current-page {
-        background: rgba(59,130,246,0.2);
-        padding: 10px;
-        border-radius: 10px;
         text-align: center;
-        margin-top: 20px;
-        border: 1px solid rgba(59,130,246,0.4);
+        margin-top: 18px;
+        font-size: 12px;
+        color: #a5b4fc !important;
+        letter-spacing: 0.3px;
+    }
+
+    /* ===== MAIN CONTENT AREA ===== */
+    .main .block-container {
+        padding: 1.5rem 2rem 2rem;
+        max-width: 1280px;
+    }
+
+    /* ===== PAGE TITLE ===== */
+    h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px !important;
+        font-weight: 700 !important;
+        background: linear-gradient(135deg, #e2e8f0, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 4px !important;
+    }
+
+    h2, h3 {
+        color: #cbd5e1 !important;
+        font-weight: 600 !important;
+    }
+
+    /* ===== GLASS CARDS ===== */
+    .glass-card {
+        background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(17,24,39,0.90));
+        border: 1px solid rgba(79,70,229,0.2);
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+        backdrop-filter: blur(12px);
+    }
+
+    /* ===== SECTION TITLE inside cards ===== */
+    .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(79,70,229,0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ===== GRADIENT SUBHEADER ===== */
+    .gradient-subheader {
+        font-size: 18px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #818cf8, #c4b5fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 20px 0 12px;
+        letter-spacing: -0.3px;
+    }
+
+    /* ===== CHART CARD ===== */
+    .chart-card {
+        background: rgba(15,23,42,0.7);
+        border: 1px solid rgba(79,70,229,0.15);
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 12px;
+    }
+
+    /* ===== CATEGORY TITLE ===== */
+    .category-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #94a3b8 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 10px;
+    }
+
+    /* ===== MAIN AREA BUTTONS ===== */
+    .main .stButton > button,
+    .stForm .stButton > button {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #ffffff !important;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+    }
+
+    .main .stButton > button:hover,
+    .stForm .stButton > button:hover {
+        background: linear-gradient(135deg, #4338ca, #6d28d9);
+        box-shadow: 0 6px 20px rgba(79,70,229,0.5);
+        transform: translateY(-1px);
+    }
+
+    .main .stButton > button:active,
+    .stForm .stButton > button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+    }
+
+    /* ===== FORM SUBMIT BUTTON ===== */
+    [data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 10px 20px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 14px rgba(79,70,229,0.35) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    [data-testid="stFormSubmitButton"] > button:hover {
+        background: linear-gradient(135deg, #4338ca, #6d28d9) !important;
+        box-shadow: 0 6px 20px rgba(79,70,229,0.5) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* ===== INPUTS ===== */
+    [data-testid="stTextInput"] input,
+    [data-testid="stNumberInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background: rgba(15,23,42,0.8) !important;
+        border: 1px solid rgba(79,70,229,0.25) !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+        font-size: 14px !important;
+        padding: 10px 14px !important;
+        transition: border-color 0.2s ease !important;
+    }
+
+    [data-testid="stTextInput"] input:focus,
+    [data-testid="stNumberInput"] input:focus,
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: rgba(79,70,229,0.6) !important;
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.12) !important;
+    }
+
+    [data-testid="stTextInput"] input::placeholder,
+    [data-testid="stTextArea"] textarea::placeholder {
+        color: #475569 !important;
+    }
+
+    /* ===== SELECT BOX ===== */
+    [data-testid="stSelectbox"] > div > div {
+        background: rgba(15,23,42,0.8) !important;
+        border: 1px solid rgba(79,70,229,0.25) !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+    }
+
+    /* ===== RADIO BUTTONS ===== */
+    [data-testid="stRadio"] label {
+        color: #94a3b8 !important;
+        font-size: 14px !important;
+    }
+
+    [data-testid="stRadio"] label:hover {
+        color: #e2e8f0 !important;
+    }
+
+    /* ===== METRICS ===== */
+    [data-testid="stMetric"] {
+        background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(17,24,39,0.85));
+        border: 1px solid rgba(79,70,229,0.2);
+        border-radius: 14px;
+        padding: 16px 18px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79,70,229,0.2);
+        border-color: rgba(79,70,229,0.4);
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #64748b !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #e2e8f0 !important;
+        font-size: 28px !important;
+        font-weight: 700 !important;
+    }
+
+    /* ===== DATAFRAME / TABLE ===== */
+    [data-testid="stDataFrame"] {
+        border-radius: 12px !important;
+        overflow: hidden;
+        border: 1px solid rgba(79,70,229,0.2) !important;
+    }
+
+    [data-testid="stDataFrame"] iframe {
+        border-radius: 12px !important;
+    }
+
+    /* ===== TABS ===== */
+    [data-testid="stTabs"] [role="tablist"] {
+        background: rgba(15,23,42,0.6);
+        border-radius: 12px;
+        padding: 4px;
+        gap: 2px;
+        border: 1px solid rgba(79,70,229,0.15);
+    }
+
+    [data-testid="stTabs"] [role="tab"] {
+        border-radius: 9px !important;
+        color: #64748b !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        padding: 7px 16px !important;
+        transition: all 0.2s ease !important;
+        border: none !important;
+    }
+
+    [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 10px rgba(79,70,229,0.4) !important;
+    }
+
+    [data-testid="stTabs"] [role="tab"]:hover:not([aria-selected="true"]) {
+        background: rgba(79,70,229,0.1) !important;
+        color: #a5b4fc !important;
+    }
+
+    /* ===== ALERTS / MESSAGES ===== */
+    [data-testid="stAlert"] {
+        border-radius: 12px !important;
+        border-left-width: 3px !important;
+        font-size: 14px !important;
+    }
+
+    /* ===== DATE INPUT ===== */
+    [data-testid="stDateInput"] input {
+        background: rgba(15,23,42,0.8) !important;
+        border: 1px solid rgba(79,70,229,0.25) !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(15,23,42,0.4);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(79,70,229,0.4);
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(79,70,229,0.65);
+    }
+
+    /* ===== PAGE NUMBER INDICATOR ===== */
+    .page-indicator {
+        background: rgba(79,70,229,0.12);
+        border: 1px solid rgba(79,70,229,0.25);
+        border-radius: 8px;
+        padding: 8px 16px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: #a5b4fc;
+        display: inline-block;
+        width: 100%;
+    }
+
+    /* ===== FORM CONTAINER ===== */
+    [data-testid="stForm"] {
+        background: rgba(15,23,42,0.5);
+        border: 1px solid rgba(79,70,229,0.15);
+        border-radius: 14px;
+        padding: 16px !important;
+    }
+
+    /* ===== CAPTION ===== */
+    .stCaption {
+        color: #475569 !important;
+        font-size: 12px !important;
+    }
+
+    /* ===== LABEL ===== */
+    label, [data-testid="stWidgetLabel"] {
+        color: #94a3b8 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    /* ===== NUMBER INPUT SPINNERS ===== */
+    [data-testid="stNumberInput"] button {
+        background: rgba(79,70,229,0.15) !important;
+        border: 1px solid rgba(79,70,229,0.2) !important;
+        color: #a5b4fc !important;
+        border-radius: 6px !important;
+    }
+
+    [data-testid="stNumberInput"] button:hover {
+        background: rgba(79,70,229,0.3) !important;
     }
 
     </style>
@@ -187,7 +539,8 @@ st.write(f"Welcome to the **{page}** page.")
 # --- Overview / Dashboard ---
 if page == "Overview":
     st.markdown(
-        "<h3 style='color:black;'>Dashboard Overview</h3>", unsafe_allow_html=True
+        "<h3 style='color:#cbd5e1; font-family: Inter, sans-serif; font-weight:600; margin-bottom:16px;'>Dashboard Overview</h3>",
+        unsafe_allow_html=True,
     )
 
     # --- TABS CREATION ---
@@ -368,7 +721,7 @@ if page == "Overview":
                                 colors=colors[: len(type_counts)],
                                 radius=0.8,
                                 labeldistance=1.2,
-                                textprops={"color": "#737373", "fontsize": 8},
+                                textprops={"color": "#cbd5e1", "fontsize": 8},
                                 wedgeprops={"edgecolor": "white", "linewidth": 1.5},
                             )
 
@@ -419,16 +772,16 @@ if page == "Overview":
                             width=0.5,
                         )
 
-                        ax2.tick_params(axis="x", colors="#737373", rotation=45)
-                        ax2.tick_params(axis="y", colors="#737373")
+                        ax2.tick_params(axis="x", colors="#94a3b8", rotation=45)
+                        ax2.tick_params(axis="y", colors="#94a3b8")
                         ax2.set_ylabel(
-                            "New Members", color="#737373", fontweight="bold"
+                            "New Members", color="#94a3b8", fontweight="bold"
                         )
 
                         for spine in ["top", "right"]:
                             ax2.spines[spine].set_visible(False)
-                        ax2.spines["bottom"].set_color("#E5E5E5")
-                        ax2.spines["left"].set_color("#E5E5E5")
+                        ax2.spines["bottom"].set_color("#1e293b")
+                        ax2.spines["left"].set_color("#1e293b")
 
                         st.pyplot(fig2)
                     else:
@@ -527,19 +880,19 @@ if page == "Overview":
                                 markersize=8,
                             )
 
-                            ax.tick_params(axis="x", colors="#737373")
-                            ax.tick_params(axis="y", colors="#737373")
+                            ax.tick_params(axis="x", colors="#94a3b8")
+                            ax.tick_params(axis="y", colors="#94a3b8")
                             ax.set_ylabel(
                                 "Total Count",
-                                color="#737373",
+                                color="#94a3b8",
                                 fontweight="bold",
                             )
 
                             # Clean up the chart borders (spines)
                             for spine in ["top", "right"]:
                                 ax.spines[spine].set_visible(False)
-                            ax.spines["bottom"].set_color("#E5E5E5")
-                            ax.spines["left"].set_color("#E5E5E5")
+                            ax.spines["bottom"].set_color("#1e293b")
+                            ax.spines["left"].set_color("#1e293b")
 
                             # Optional: set y-axis to start at 0 so the scale makes sense
                             ax.set_ylim(bottom=0)
@@ -580,18 +933,18 @@ if page == "Overview":
                                     width=0.5,
                                 )
 
-                                ax2.tick_params(axis="x", colors="#737373", rotation=45)
-                                ax2.tick_params(axis="y", colors="#737373")
+                                ax2.tick_params(axis="x", colors="#94a3b8", rotation=45)
+                                ax2.tick_params(axis="y", colors="#94a3b8")
                                 ax2.set_ylabel(
                                     "Total Books Issued",
-                                    color="#737373",
+                                    color="#94a3b8",
                                     fontweight="bold",
                                 )
 
                                 for spine in ["top", "right"]:
                                     ax2.spines[spine].set_visible(False)
-                                ax2.spines["bottom"].set_color("#E5E5E5")
-                                ax2.spines["left"].set_color("#E5E5E5")
+                                ax2.spines["bottom"].set_color("#1e293b")
+                                ax2.spines["left"].set_color("#1e293b")
 
                                 st.pyplot(fig2)
                             else:
@@ -1153,7 +1506,7 @@ elif page == "Transaction":
                     with col2:
                         st.markdown(
                             f"""
-                            <div style='text-align:center;padding-top:8px'>
+                            <div class="page-indicator">
                             Page {data.get('current_page')} of {data.get('total_pages')}
                             </div>
                             """,
@@ -1264,7 +1617,7 @@ elif page == "Member":
 
         with center_col:
             st.markdown(
-                f'<div style="text-align:center; font-size:20px; font-weight:600; padding-top:8px;">Page {st.session_state.member_page}</div>',
+                f'<div class="page-indicator">Page {st.session_state.member_page}</div>',
                 unsafe_allow_html=True,
             )
 
@@ -1762,10 +2115,7 @@ elif page == "Management":
         with center_col:
             st.markdown(
                 f"""
-                <div style="text-align:center;
-                            font-size:20px;
-                            font-weight:600;
-                            padding-top:8px;">
+                <div class="page-indicator">
                     Page {st.session_state.membership_page}
                 </div>
                 """,
@@ -1973,10 +2323,7 @@ elif page == "Fines":
     with center_col:
         st.markdown(
             f"""
-                <div style="text-align:center;
-                            font-size:20px;
-                            font-weight:600;
-                            padding-top:8px;">
+                <div class="page-indicator">
                     Page {st.session_state.fine_page}
                 </div>
                 """,
@@ -2124,25 +2471,3 @@ elif page == "Setting":
 
 elif page == "Profile":
     st.markdown("profile")
-
-"""recreate this with following instructions:
-Please design the UI based on the following exact specifications:
-1. Overall Aesthetic & Color Theory
-
-* Theme: "Modern Academic." Crisp, clean, and professional.
-* Background (Primary): Soft off-white or light cool-gray (`#F8F9FA`) to reduce eye strain during long shifts.
-* Containers/Cards: Pure white (`#FFFFFF`) to create distinct content zones.
-* Sidebar/Navigation (Secondary): Deep navy blue (`#1E293B`) or rich slate to anchor the layout and provide high contrast.
-* Accents & Calls to Action: Muted emerald green (`#10B981`) for success/add actions, and a warm amber (`#F59E0B`) for warnings or overdue notices.
-* Typography: A highly legible, modern sans-serif font like 'Inter' or 'Roboto'. Use dark charcoal (`#334155`) for primary text, never pure black.
-2. Layout Architecture
-
-* Left Sidebar (Fixed): Clean vertical navigation. Should include subtle, minimalist icons for: Dashboard, Book Catalog, Member Directory, Issue/Return Desk, and Settings. The active tab should be highlighted with the accent color.
-* Top Header: A global search bar prominent in the center (to search books by ISBN/Title instantly), breadcrumb navigation on the left, and an admin profile/notification bell on the right.
-* Main Content Canvas: A spacious grid layout with generous padding (at least 2rem) and a slight gray background to make the white content cards pop.
-3. Core UI Components
-
-* Metric Dashboard (Top Row): 3-4 prominent "Stat Cards" displaying total books, active members, overdue returns, and today's circulation. These cards should have a very soft, diffused drop shadow (`box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05)`) and rounded corners (`border-radius: 12px`).
-* Book Catalog View: A clean data table or grid of book cards. Each row/card must display the book cover thumbnail, Title, Author, ISBN, and a color-coded availability badge (Green = Available, Red = Checked Out).
-* Action Buttons: Smooth, pill-shaped or softly rounded buttons. Primary actions (like "Issue Book") should be solid accent colors. Secondary actions (like "Edit") should be outlined. All buttons must have a subtle `transform: translateY(-2px)` hover effect.
-* Inputs & Forms: Search bars and form fields should have light gray borders that transition to a glowing accent-color outline when clicked/focused."""

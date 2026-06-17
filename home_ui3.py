@@ -15,98 +15,319 @@ st.markdown(
     """
     <style>
 
-    /* Main Sidebar */
+    /* ── BACKGROUND ── */
+    .stApp,
+    body,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stAppViewBlockContainer"] {
+        background-color: #111111 !important;
+        color: #d4d4d4 !important;
+    }
+
+    /* ── SIDEBAR ── */
     [data-testid="stSidebar"] {
-        background: linear-gradient(
-            180deg,
-            #0f172a 0%,
-            #1e293b 50%,
-            #334155 100%
-        );
-        border-right: 1px solid rgba(255,255,255,0.1);
+        background-color: #1a1a1a !important;
+        border-right: 1px solid #2a2a2a;
     }
-
-    /* Sidebar content */
     [data-testid="stSidebar"] * {
-        color: white;
+        color: #c0c0c0 !important;
     }
 
-    /* Logo Section */
+    /* ── LOGO ── */
     .library-logo {
-        text-align: center;
-        padding: 15px 10px;
-        margin-bottom: 15px;
-        border-radius: 15px;
-        background: linear-gradient(
-            135deg,
-            #3b82f6,
-            #8b5cf6
-        );
-        box-shadow: 0 4px 20px rgba(59,130,246,0.4);
-    }
-
-    .library-title {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .library-subtitle {
-        font-size: 13px;
-        opacity: 0.9;
-    }
-
-    /* Section Headers */
-    .section-header {
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 1px;
-        margin-top: 15px;
-        margin-bottom: 5px;
-    }
-
-    /* Buttons */
-    .stButton > button {
-        width: 100%;
-        background: rgba(255,255,255,0.05);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 12px;
-        padding: 12px;
-        font-size: 15px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    /* Hover Effect */
-    .stButton > button:hover {
-        background: linear-gradient(
-            90deg,
-            #3b82f6,
-            #8b5cf6
-        );
-        border: none;
-        transform: translateX(4px);
-        box-shadow: 0 4px 15px rgba(59,130,246,0.4);
-    }
-
-    /* Divider */
-    hr {
-        border: none;
-        height: 1px;
-        background: rgba(255,255,255,0.1);
-    }
-
-    /* Current Page Badge */
-    .current-page {
-        background: rgba(59,130,246,0.2);
-        padding: 10px;
+        background-color: #6366f1;
         border-radius: 10px;
+        padding: 16px 10px;
         text-align: center;
-        margin-top: 20px;
-        border: 1px solid rgba(59,130,246,0.4);
+        margin-bottom: 16px;
     }
+    .library-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ffffff !important;
+        margin-bottom: 2px;
+    }
+    .library-subtitle {
+        font-size: 11px;
+        color: rgba(255,255,255,0.75) !important;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── SIDEBAR SECTION LABELS ── */
+    .section-header {
+        color: #555555 !important;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin: 14px 0 4px 2px;
+        display: block;
+    }
+
+    /* ── SIDEBAR BUTTONS ── */
+    [data-testid="stSidebar"] .stButton > button {
+        width: 100%;
+        background-color: transparent !important;
+        color: #a0a0a0 !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: left;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        margin-bottom: 2px;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background-color: #2a2a2a !important;
+        color: #ffffff !important;
+        border-color: #333333 !important;
+    }
+
+    /* ── DIVIDER ── */
+    hr {
+        border: none !important;
+        border-top: 1px solid #2a2a2a !important;
+        margin: 10px 0 !important;
+    }
+
+    /* ── CURRENT PAGE BADGE ── */
+    .current-page {
+        background-color: #1f1f1f;
+        border: 1px solid #2f2f2f;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        margin-top: 14px;
+        font-size: 12px;
+        color: #9090f0 !important;
+    }
+
+    /* ── HEADINGS ── */
+    h1 { color: #ffffff !important; font-size: 26px !important; font-weight: 700 !important; margin-bottom: 4px !important; }
+    h2, h3 { color: #d0d0d0 !important; font-weight: 600 !important; }
+
+    /* ── GLASS CARD (simplified — just a dark box) ── */
+    .glass-card {
+        background-color: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 10px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #e0e0e0;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    /* ── SUBHEADER ── */
+    .gradient-subheader {
+        font-size: 16px;
+        font-weight: 600;
+        color: #9090f0;
+        margin: 16px 0 10px;
+    }
+
+    /* ── CHART CARD ── */
+    .chart-card {
+        background-color: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+    }
+
+    /* ── CATEGORY TITLE ── */
+    .category-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #888888 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 8px;
+    }
+
+    /* ── MAIN BUTTONS ── */
+    .main .stButton > button,
+    .stForm .stButton > button {
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background-color 0.15s ease;
+    }
+    .main .stButton > button:hover,
+    .stForm .stButton > button:hover {
+        background-color: #4f46e5 !important;
+    }
+
+    /* ── FORM SUBMIT ── */
+    [data-testid="stFormSubmitButton"] > button {
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 9px 18px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stFormSubmitButton"] > button:hover {
+        background-color: #4f46e5 !important;
+    }
+
+    /* ── INPUTS ── */
+    [data-testid="stTextInput"] input,
+    [data-testid="stNumberInput"] input,
+    [data-testid="stTextArea"] textarea,
+    [data-testid="stDateInput"] input {
+        background-color: #1f1f1f !important;
+        border: 1px solid #333333 !important;
+        border-radius: 8px !important;
+        color: #e0e0e0 !important;
+        font-size: 14px !important;
+    }
+    [data-testid="stTextInput"] input:focus,
+    [data-testid="stNumberInput"] input:focus,
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99,102,241,0.2) !important;
+    }
+    [data-testid="stTextInput"] input::placeholder,
+    [data-testid="stTextArea"] textarea::placeholder {
+        color: #555555 !important;
+    }
+
+    /* ── SELECT BOX ── */
+    [data-testid="stSelectbox"] > div > div {
+        background-color: #1f1f1f !important;
+        border: 1px solid #333333 !important;
+        border-radius: 8px !important;
+        color: #e0e0e0 !important;
+    }
+
+    /* ── RADIO ── */
+    [data-testid="stRadio"] label { color: #a0a0a0 !important; font-size: 14px !important; }
+    [data-testid="stRadio"] label:hover { color: #e0e0e0 !important; }
+
+    /* ── METRICS ── */
+    [data-testid="stMetric"] {
+        background-color: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #666666 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+    }
+    [data-testid="stMetricValue"] {
+        color: #e0e0e0 !important;
+        font-size: 26px !important;
+        font-weight: 700 !important;
+    }
+
+    /* ── DATAFRAME ── */
+    [data-testid="stDataFrame"] {
+        border: 1px solid #2a2a2a !important;
+        border-radius: 8px !important;
+        overflow: hidden;
+    }
+
+    /* ── TABS ── */
+    [data-testid="stTabs"] [role="tablist"] {
+        background-color: #1a1a1a;
+        border-bottom: 1px solid #2a2a2a;
+        padding: 0 4px;
+        gap: 2px;
+    }
+    [data-testid="stTabs"] [role="tab"] {
+        color: #666666 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        padding: 8px 14px !important;
+        border-radius: 6px 6px 0 0 !important;
+        border: none !important;
+        transition: color 0.15s ease !important;
+    }
+    [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stTabs"] [role="tab"]:hover:not([aria-selected="true"]) {
+        color: #cccccc !important;
+        background-color: #222222 !important;
+    }
+
+    /* ── ALERTS ── */
+    [data-testid="stAlert"] {
+        background-color: #1f1f1f !important;
+        border-radius: 8px !important;
+        border-left-width: 3px !important;
+        font-size: 14px !important;
+    }
+
+    /* ── FORM CONTAINER ── */
+    [data-testid="stForm"] {
+        background-color: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
+        border-radius: 10px !important;
+        padding: 14px !important;
+    }
+
+    /* ── LABELS ── */
+    label,
+    [data-testid="stWidgetLabel"] {
+        color: #888888 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    /* ── CAPTION ── */
+    .stCaption { color: #555555 !important; font-size: 12px !important; }
+
+    /* ── NUMBER INPUT STEPPERS ── */
+    [data-testid="stNumberInput"] button {
+        background-color: #2a2a2a !important;
+        border: 1px solid #333333 !important;
+        color: #a0a0a0 !important;
+        border-radius: 5px !important;
+    }
+    [data-testid="stNumberInput"] button:hover {
+        background-color: #333333 !important;
+    }
+
+    /* ── PAGE INDICATOR ── */
+    .page-indicator {
+        background-color: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 6px;
+        padding: 8px 14px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: #9090f0;
+        width: 100%;
+        display: inline-block;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #333333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
 
     </style>
     """,
@@ -187,7 +408,7 @@ st.write(f"Welcome to the **{page}** page.")
 # --- Overview / Dashboard ---
 if page == "Overview":
     st.markdown(
-        "<h3 style='color:black;'>Dashboard Overview</h3>", unsafe_allow_html=True
+        "<h3 style='color:#cbd5e1; font-family: Inter, sans-serif; font-weight:600; margin-bottom:16px;'>Dashboard Overview</h3>", unsafe_allow_html=True
     )
 
     # --- TABS CREATION ---
@@ -368,7 +589,7 @@ if page == "Overview":
                                 colors=colors[: len(type_counts)],
                                 radius=0.8,
                                 labeldistance=1.2,
-                                textprops={"color": "#737373", "fontsize": 8},
+                                textprops={"color": "#cbd5e1", "fontsize": 8},
                                 wedgeprops={"edgecolor": "white", "linewidth": 1.5},
                             )
 
@@ -419,16 +640,16 @@ if page == "Overview":
                             width=0.5,
                         )
 
-                        ax2.tick_params(axis="x", colors="#737373", rotation=45)
-                        ax2.tick_params(axis="y", colors="#737373")
+                        ax2.tick_params(axis="x", colors="#94a3b8", rotation=45)
+                        ax2.tick_params(axis="y", colors="#94a3b8")
                         ax2.set_ylabel(
-                            "New Members", color="#737373", fontweight="bold"
+                            "New Members", color="#94a3b8", fontweight="bold"
                         )
 
                         for spine in ["top", "right"]:
                             ax2.spines[spine].set_visible(False)
-                        ax2.spines["bottom"].set_color("#E5E5E5")
-                        ax2.spines["left"].set_color("#E5E5E5")
+                        ax2.spines["bottom"].set_color("#1e293b")
+                        ax2.spines["left"].set_color("#1e293b")
 
                         st.pyplot(fig2)
                     else:
@@ -527,19 +748,19 @@ if page == "Overview":
                                 markersize=8,
                             )
 
-                            ax.tick_params(axis="x", colors="#737373")
-                            ax.tick_params(axis="y", colors="#737373")
+                            ax.tick_params(axis="x", colors="#94a3b8")
+                            ax.tick_params(axis="y", colors="#94a3b8")
                             ax.set_ylabel(
                                 "Total Count",
-                                color="#737373",
+                                color="#94a3b8",
                                 fontweight="bold",
                             )
 
                             # Clean up the chart borders (spines)
                             for spine in ["top", "right"]:
                                 ax.spines[spine].set_visible(False)
-                            ax.spines["bottom"].set_color("#E5E5E5")
-                            ax.spines["left"].set_color("#E5E5E5")
+                            ax.spines["bottom"].set_color("#1e293b")
+                            ax.spines["left"].set_color("#1e293b")
 
                             # Optional: set y-axis to start at 0 so the scale makes sense
                             ax.set_ylim(bottom=0)
@@ -580,18 +801,18 @@ if page == "Overview":
                                     width=0.5,
                                 )
 
-                                ax2.tick_params(axis="x", colors="#737373", rotation=45)
-                                ax2.tick_params(axis="y", colors="#737373")
+                                ax2.tick_params(axis="x", colors="#94a3b8", rotation=45)
+                                ax2.tick_params(axis="y", colors="#94a3b8")
                                 ax2.set_ylabel(
                                     "Total Books Issued",
-                                    color="#737373",
+                                    color="#94a3b8",
                                     fontweight="bold",
                                 )
 
                                 for spine in ["top", "right"]:
                                     ax2.spines[spine].set_visible(False)
-                                ax2.spines["bottom"].set_color("#E5E5E5")
-                                ax2.spines["left"].set_color("#E5E5E5")
+                                ax2.spines["bottom"].set_color("#1e293b")
+                                ax2.spines["left"].set_color("#1e293b")
 
                                 st.pyplot(fig2)
                             else:
@@ -1153,7 +1374,7 @@ elif page == "Transaction":
                     with col2:
                         st.markdown(
                             f"""
-                            <div style='text-align:center;padding-top:8px'>
+                            <div class="page-indicator">
                             Page {data.get('current_page')} of {data.get('total_pages')}
                             </div>
                             """,
@@ -1264,7 +1485,7 @@ elif page == "Member":
 
         with center_col:
             st.markdown(
-                f'<div style="text-align:center; font-size:20px; font-weight:600; padding-top:8px;">Page {st.session_state.member_page}</div>',
+                f'<div class="page-indicator">Page {st.session_state.member_page}</div>',
                 unsafe_allow_html=True,
             )
 
@@ -1762,10 +1983,7 @@ elif page == "Management":
         with center_col:
             st.markdown(
                 f"""
-                <div style="text-align:center;
-                            font-size:20px;
-                            font-weight:600;
-                            padding-top:8px;">
+                <div class="page-indicator">
                     Page {st.session_state.membership_page}
                 </div>
                 """,
@@ -1973,10 +2191,7 @@ elif page == "Fines":
     with center_col:
         st.markdown(
             f"""
-                <div style="text-align:center;
-                            font-size:20px;
-                            font-weight:600;
-                            padding-top:8px;">
+                <div class="page-indicator">
                     Page {st.session_state.fine_page}
                 </div>
                 """,
@@ -2124,25 +2339,3 @@ elif page == "Setting":
 
 elif page == "Profile":
     st.markdown("profile")
-
-"""recreate this with following instructions:
-Please design the UI based on the following exact specifications:
-1. Overall Aesthetic & Color Theory
-
-* Theme: "Modern Academic." Crisp, clean, and professional.
-* Background (Primary): Soft off-white or light cool-gray (`#F8F9FA`) to reduce eye strain during long shifts.
-* Containers/Cards: Pure white (`#FFFFFF`) to create distinct content zones.
-* Sidebar/Navigation (Secondary): Deep navy blue (`#1E293B`) or rich slate to anchor the layout and provide high contrast.
-* Accents & Calls to Action: Muted emerald green (`#10B981`) for success/add actions, and a warm amber (`#F59E0B`) for warnings or overdue notices.
-* Typography: A highly legible, modern sans-serif font like 'Inter' or 'Roboto'. Use dark charcoal (`#334155`) for primary text, never pure black.
-2. Layout Architecture
-
-* Left Sidebar (Fixed): Clean vertical navigation. Should include subtle, minimalist icons for: Dashboard, Book Catalog, Member Directory, Issue/Return Desk, and Settings. The active tab should be highlighted with the accent color.
-* Top Header: A global search bar prominent in the center (to search books by ISBN/Title instantly), breadcrumb navigation on the left, and an admin profile/notification bell on the right.
-* Main Content Canvas: A spacious grid layout with generous padding (at least 2rem) and a slight gray background to make the white content cards pop.
-3. Core UI Components
-
-* Metric Dashboard (Top Row): 3-4 prominent "Stat Cards" displaying total books, active members, overdue returns, and today's circulation. These cards should have a very soft, diffused drop shadow (`box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05)`) and rounded corners (`border-radius: 12px`).
-* Book Catalog View: A clean data table or grid of book cards. Each row/card must display the book cover thumbnail, Title, Author, ISBN, and a color-coded availability badge (Green = Available, Red = Checked Out).
-* Action Buttons: Smooth, pill-shaped or softly rounded buttons. Primary actions (like "Issue Book") should be solid accent colors. Secondary actions (like "Edit") should be outlined. All buttons must have a subtle `transform: translateY(-2px)` hover effect.
-* Inputs & Forms: Search bars and form fields should have light gray borders that transition to a glowing accent-color outline when clicked/focused."""
