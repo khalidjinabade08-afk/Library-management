@@ -1,7 +1,7 @@
 from models.transaction_model import Transaction
 from models.book_model import book
 from models.member_model import Member
-from sqlalchemy import select
+from sqlalchemy import func
 from database.db import db
 from flask import session
 from datetime import date, timedelta
@@ -150,6 +150,13 @@ def show_fines(page=1, per_page=4):
             )
         )
 
+        total_fine_collected = (
+            db.session.query(func.sum(Transaction.fine_amount))
+            .filter(Transaction.fine_amount > 0)
+            .scalar()
+            or 0
+        )
+
         fines = []
 
         for transaction in page_obj.items:
@@ -175,6 +182,7 @@ def show_fines(page=1, per_page=4):
                 "total_records": page_obj.total,
                 "current_page": page_obj.page,
                 "total_pages": page_obj.pages,
+                "total_fine_collected": float(total_fine_collected),
             },
         )
 
