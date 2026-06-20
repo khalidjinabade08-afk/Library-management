@@ -453,6 +453,7 @@ def login_user(username, password):
             f"{auth_url}/login", json={"username": username, "password": password}
         )
         if response.status_code == 200:
+            st.session_state.cookies = response.cookies.get_dict()
             st.session_state.authenticated = True
             st.session_state.user_data = response.json().get("data", {})
             st.success("Login Successful")

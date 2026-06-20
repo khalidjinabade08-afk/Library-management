@@ -2496,4 +2496,68 @@ def show_dashboard():
                     st.error(f"Error: {e}")
 
     elif page == "Profile":
-        st.markdown("profile")
+
+        st.markdown(
+            """
+            <div class="glass-card">
+                <div class="section-title">👤 User Profile</div>
+                <p style="color:#94a3b8; margin:0;">
+                    View your account details and role information.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        try:
+            response = requests.get(
+                f"{base_url}/auth/profile", cookies=st.session_state.get("cookies", {})
+            )
+
+            if response.status_code == 200:
+
+                user = response.json()["data"]
+                st.markdown(
+                    f"""
+                    <div class="glass-card">
+                        <div class="gradient-subheader" style="margin-top: 0; font-size: 24px;">{user['name']}</div>
+                        <hr style="margin: 16px 0 !important;">
+                        <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                            <p style="margin: 0; font-size: 15px;">
+                                <strong style="color: #cbd5e1;">ID:</strong> 
+                                <span style="color: #94a3b8;">{user['id']}</span>
+                            </p>
+                            <p style="margin: 0; font-size: 15px;">
+                                <strong style="color: #cbd5e1;">Username:</strong> 
+                                <span style="color: #94a3b8;">{user['username']}</span>
+                            </p>
+                            <p style="margin: 0; font-size: 15px;">
+                                <strong style="color: #cbd5e1;">Role:</strong> 
+                                <span style="color: #a5b4fc; text-transform: capitalize; font-weight: 500;">{user['role']}</span>
+                            </p>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    if st.button(
+                        "Logout",
+                        key="profile_logout_btn",
+                        use_container_width=True,
+                    ):
+                        st.session_state.authenticated = False
+                        if "user_data" in st.session_state:
+                            st.session_state.user_data = None
+                        if "page" in st.session_state:
+                            st.session_state.page = "Overview"
+                        st.rerun()
+
+            else:
+                st.error("Unable to fetch profile")
+
+        except Exception as e:
+            st.error(str(e))

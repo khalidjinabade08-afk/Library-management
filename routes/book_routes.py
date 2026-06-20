@@ -57,7 +57,7 @@ class BookList(Resource):
             "per_page": {"description": "per page", "type": "int", "default": 4},
         }
     )
-    # @role_required(["superadmin","admin"])
+    # @role_required(["superadmin", "admin"])
     def get(self):
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 4, type=int)

@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request
 from utils.role_requirment import role_required
-from services.user_service import register, login, change, delete
+from services.user_service import register, login, change, delete, show
 
 auth_routes = Namespace("Admin API", description="Authentication APIs")
 
@@ -65,7 +65,7 @@ class Login(Resource):
 @auth_routes.route("/change_password")
 class changePassword(Resource):
     @auth_routes.expect(password_model, validate=True)
-    # @role_required(["superadmin","admin"])
+    # @role_required(["superadmin", "admin"])
     def put(self):
         data = request.get_json()
         return change(data)
@@ -74,6 +74,14 @@ class changePassword(Resource):
 # delete user
 @auth_routes.route("/delete/<int:user_id>")
 class deleteUser(Resource):
-    # @role_required(["superadmin"])
+    @role_required(["superadmin"])
     def delete(self, user_id):
         return delete(user_id)
+
+
+# show user
+@auth_routes.route("/profile")
+class UserProfile(Resource):
+
+    def get(self):
+        return show()

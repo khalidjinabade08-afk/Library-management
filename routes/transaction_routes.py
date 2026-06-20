@@ -82,7 +82,6 @@ class ShowFines(Resource):
         }
     )
     def get(self):
-
         page = request.args.get(
             "page",
             1,
