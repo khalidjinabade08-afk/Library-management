@@ -1,439 +1,407 @@
 import streamlit as st
 import requests
-from home_ui import show_dashboard
 
+# Page configuration
 st.set_page_config(
-    page_title="Library Management System", page_icon="📚", layout="wide"
+    page_title="Library Management System",
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-base_url = "http://127.0.0.1:5501"
-auth_url = f"{base_url}/auth"
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-if "user_data" not in st.session_state:
-    st.session_state.user_data = None
+BASE_URL = "http://127.0.0.1:5501"
+AUTH_URL = f"{BASE_URL}/auth"
 
 
-def apply_custom_style():
+def apply_simple_style():
+    """Injects a modern, aesthetic, and vibrant stylesheet without being overwhelming."""
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
-        
-        html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+        html, body, [class*="css"], .stApp {
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            color: #f1f5f9 !important;
         }
 
+        /* Ambient luxury dark background */
         .stApp {
-            background: #0a0f1e;
-            color: #e2e8f0;
+            background-color: #0b0f19 !important;
+            background-image: 
+                radial-gradient(at 15% 15%, rgba(99, 102, 241, 0.12) 0px, transparent 45%),
+                radial-gradient(at 85% 20%, rgba(6, 182, 212, 0.08) 0px, transparent 40%),
+                radial-gradient(at 50% 90%, rgba(139, 92, 246, 0.08) 0px, transparent 50%) !important;
+            background-attachment: fixed !important;
         }
 
+        /* Sidebar Styling */
         [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #080d1a 0%, #0f172a 40%, #111827 100%);
-            border-right: 1px solid rgba(59,130,246,0.15);
+            background-color: #0d1322 !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
         }
 
-        [data-testid="stSidebar"] * {
-            color: #cbd5e1 !important;
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 4px 18px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 16px;
         }
 
-        .library-logo {
-            text-align: center;
-            padding: 20px 12px 16px;
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45);
+            flex-shrink: 0;
+        }
+
+        .brand-text h3 {
+            margin: 0 !important;
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.4px;
+            line-height: 1.2 !important;
+            background: linear-gradient(135deg, #ffffff 40%, #c7d2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            margin: 2px 0 0 0 !important;
+            font-size: 11px !important;
+            color: #94a3b8 !important;
+            font-weight: 600 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             margin-bottom: 18px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 50%, #7c3aed 100%);
-            box-shadow: 0 8px 32px rgba(79,70,229,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
-            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-card-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             overflow: hidden;
         }
 
-        .library-logo::before {
-            content: '';
-            position: absolute;
-            top: -40%;
-            left: -40%;
-            width: 180%;
-            height: 180%;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .library-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            font-weight: 700;
-            color: #ffffff !important;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-        }
-
-        .library-subtitle {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.75) !important;
-        }
-
-        .section-header {
-            color: #475569 !important;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 18px 0 6px 4px;
-            display: block;
-        }
-
-        [data-testid="stSidebar"] .stButton > button {
-            width: 100%;
-            background: transparent;
-            color: #94a3b8 !important;
-            border: 1px solid transparent;
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: left;
-            transition: all 0.2s ease;
-            margin-bottom: 2px;
-        }
-
-        [data-testid="stSidebar"] .stButton > button:hover {
-            background: linear-gradient(90deg, rgba(79,70,229,0.18), rgba(124,58,237,0.10));
-            color: #e2e8f0 !important;
-            border-color: rgba(79,70,229,0.35);
-            transform: translateX(3px);
-            box-shadow: 0 0 0 0;
-        }
-
-        [data-testid="stSidebar"] .stButton > button:focus {
-            background: linear-gradient(90deg, rgba(79,70,229,0.25), rgba(124,58,237,0.15));
-            color: #ffffff !important;
-            border-color: rgba(79,70,229,0.5);
-            box-shadow: none;
-        }
-
-        hr {
-            border: none !important;
-            height: 1px !important;
-            background: linear-gradient(90deg, transparent, rgba(79,70,229,0.3), transparent) !important;
-            margin: 12px 0 !important;
-        }
-
-        .current-page {
-            background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(124,58,237,0.10));
-            border: 1px solid rgba(79,70,229,0.3);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            margin-top: 18px;
-            font-size: 12px;
-            color: #a5b4fc !important;
-            letter-spacing: 0.3px;
-        }
-
-        .main .block-container {
-            padding: 1.5rem 2rem 2rem;
-            max-width: 1280px;
-        }
-
-        h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px !important;
-            font-weight: 700 !important;
-            background: linear-gradient(135deg, #e2e8f0, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 4px !important;
-        }
-
-        h2, h3 {
-            color: #cbd5e1 !important;
-            font-weight: 600 !important;
-        }
-
-        .glass-card {
-            background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(17,24,39,0.90));
-            border: 1px solid rgba(79,70,229,0.2);
-            border-radius: 16px;
-            padding: 20px 24px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
-            backdrop-filter: blur(12px);
-        }
-
-        .section-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: #e2e8f0;
-            margin-bottom: 14px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(79,70,229,0.2);
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #ffffff;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .gradient-subheader {
-            font-size: 18px;
+            justify-content: center;
             font-weight: 700;
-            background: linear-gradient(90deg, #818cf8, #c4b5fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 20px 0 12px;
-            letter-spacing: -0.3px;
-        }
-
-        .chart-card {
-            background: rgba(15,23,42,0.7);
-            border: 1px solid rgba(79,70,229,0.15);
-            border-radius: 14px;
-            padding: 16px 18px;
-            margin-bottom: 12px;
-        }
-
-        .category-title {
             font-size: 14px;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+        }
+
+        .user-info-name {
+            font-size: 13.5px;
             font-weight: 600;
-            color: #94a3b8 !important;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info-role {
+            font-size: 10.5px;
+            color: #a5b4fc;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 10px;
+            letter-spacing: 0.6px;
         }
 
-        .main .stButton > button,
-        .stForm .stButton > button {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: #ffffff !important;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            flex-shrink: 0;
         }
 
-        .main .stButton > button:hover,
-        .stForm .stButton > button:hover {
-            background: linear-gradient(135deg, #4338ca, #6d28d9);
-            box-shadow: 0 6px 20px rgba(79,70,229,0.5);
-            transform: translateY(-1px);
+        .nav-header {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1.2px !important;
+            color: #64748b !important;
+            margin: 16px 0 8px 6px !important;
         }
 
-        .main .stButton > button:active,
-        .stForm .stButton > button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+        /* Navigation Menu Pills */
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+            gap: 4px !important;
         }
 
-        [data-testid="stFormSubmitButton"] > button {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 10px !important;
-            padding: 10px 20px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            box-shadow: 0 4px 14px rgba(79,70,229,0.35) !important;
-            transition: all 0.2s ease !important;
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label > div:first-child {
+            display: none !important;
         }
 
-        [data-testid="stFormSubmitButton"] > button:hover {
-            background: linear-gradient(135deg, #4338ca, #6d28d9) !important;
-            box-shadow: 0 6px 20px rgba(79,70,229,0.5) !important;
-            transform: translateY(-1px) !important;
-        }
-
-        [data-testid="stTextInput"] input,
-        [data-testid="stNumberInput"] input,
-        [data-testid="stTextArea"] textarea {
-            background: rgba(15,23,42,0.8) !important;
-            border: 1px solid rgba(79,70,229,0.25) !important;
-            border-radius: 10px !important;
-            color: #e2e8f0 !important;
-            font-size: 14px !important;
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label {
             padding: 10px 14px !important;
-            transition: border-color 0.2s ease !important;
-        }
-
-        [data-testid="stTextInput"] input:focus,
-        [data-testid="stNumberInput"] input:focus,
-        [data-testid="stTextArea"] textarea:focus {
-            border-color: rgba(79,70,229,0.6) !important;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.12) !important;
-        }
-
-        [data-testid="stTextInput"] input::placeholder,
-        [data-testid="stTextArea"] textarea::placeholder {
-            color: #475569 !important;
-        }
-
-        [data-testid="stSelectbox"] > div > div {
-            background: rgba(15,23,42,0.8) !important;
-            border: 1px solid rgba(79,70,229,0.25) !important;
             border-radius: 10px !important;
-            color: #e2e8f0 !important;
+            cursor: pointer !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border: 1px solid transparent !important;
+            margin-bottom: 2px !important;
+            display: flex !important;
+            align-items: center !important;
+            background: transparent !important;
         }
 
-        [data-testid="stRadio"] label {
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label p {
+            font-size: 13.5px !important;
+            font-weight: 500 !important;
             color: #94a3b8 !important;
-            font-size: 14px !important;
+            margin: 0 !important;
+            transition: color 0.15s ease !important;
         }
 
-        [data-testid="stRadio"] label:hover {
-            color: #e2e8f0 !important;
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover {
+            background-color: rgba(99, 102, 241, 0.1) !important;
+            transform: translateX(4px);
         }
 
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover p {
+            color: #f1f5f9 !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.28) 0%, rgba(6, 182, 212, 0.15) 100%) !important;
+            border: 1px solid rgba(99, 102, 241, 0.45) !important;
+            box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.3) !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) p {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+
+        /* Metric Cards */
         [data-testid="stMetric"] {
-            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(17,24,39,0.85));
-            border: 1px solid rgba(79,70,229,0.2);
-            border-radius: 14px;
-            padding: 16px 18px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: rgba(17, 24, 39, 0.75) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-top: 3px solid #6366f1 !important;
+            border-radius: 14px !important;
+            padding: 18px 22px !important;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
 
         [data-testid="stMetric"]:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79,70,229,0.2);
-            border-color: rgba(79,70,229,0.4);
+            border-color: rgba(99, 102, 241, 0.4) !important;
+            box-shadow: 0 8px 26px -2px rgba(99, 102, 241, 0.25) !important;
         }
 
-        [data-testid="stMetricLabel"] {
-            color: #64748b !important;
-            font-size: 12px !important;
-            font-weight: 600 !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.8px !important;
-        }
-
-        [data-testid="stMetricValue"] {
-            color: #e2e8f0 !important;
-            font-size: 28px !important;
-            font-weight: 700 !important;
-        }
-
-        [data-testid="stDataFrame"] {
-            border-radius: 12px !important;
-            overflow: hidden;
-            border: 1px solid rgba(79,70,229,0.2) !important;
-        }
-
-        [data-testid="stDataFrame"] iframe {
-            border-radius: 12px !important;
-        }
-
-        [data-testid="stTabs"] [role="tablist"] {
-            background: rgba(15,23,42,0.6);
-            border-radius: 12px;
-            padding: 4px;
-            gap: 2px;
-            border: 1px solid rgba(79,70,229,0.15);
-        }
-
-        [data-testid="stTabs"] [role="tab"] {
-            border-radius: 9px !important;
-            color: #64748b !important;
-            font-size: 13px !important;
-            font-weight: 500 !important;
-            padding: 7px 16px !important;
-            transition: all 0.2s ease !important;
-            border: none !important;
-        }
-
-        [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-            color: #ffffff !important;
-            font-weight: 600 !important;
-            box-shadow: 0 2px 10px rgba(79,70,229,0.4) !important;
-        }
-
-        [data-testid="stTabs"] [role="tab"]:hover:not([aria-selected="true"]) {
-            background: rgba(79,70,229,0.1) !important;
-            color: #a5b4fc !important;
-        }
-        
-        [data-testid="stAlert"] {
-            border-radius: 12px !important;
-            border-left-width: 3px !important;
-            font-size: 14px !important;
-        }
-
-        [data-testid="stDateInput"] input {
-            background: rgba(15,23,42,0.8) !important;
-            border: 1px solid rgba(79,70,229,0.25) !important;
-            border-radius: 10px !important;
-            color: #e2e8f0 !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(15,23,42,0.4);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(79,70,229,0.4);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(79,70,229,0.65);
-        }
-
-        .page-indicator {
-            background: rgba(79,70,229,0.12);
-            border: 1px solid rgba(79,70,229,0.25);
-            border-radius: 8px;
-            padding: 8px 16px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            color: #a5b4fc;
-            display: inline-block;
-            width: 100%;
-        }
-
-        [data-testid="stForm"] {
-            background: rgba(15,23,42,0.5);
-            border: 1px solid rgba(79,70,229,0.15);
-            border-radius: 14px;
-            padding: 16px !important;
-        }
-
-        .stCaption {
-            color: #475569 !important;
-            font-size: 12px !important;
-        }
-
-        label, [data-testid="stWidgetLabel"] {
+        [data-testid="stMetricLabel"] p {
             color: #94a3b8 !important;
             font-size: 13px !important;
-            font-weight: 500 !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.6px !important;
         }
 
-        [data-testid="stNumberInput"] button {
-            background: rgba(79,70,229,0.15) !important;
-            border: 1px solid rgba(79,70,229,0.2) !important;
-            color: #a5b4fc !important;
-            border-radius: 6px !important;
+        [data-testid="stMetricValue"] div {
+            color: #ffffff !important;
+            font-size: 28px !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px !important;
         }
 
-        [data-testid="stNumberInput"] button:hover {
-            background: rgba(79,70,229,0.3) !important;
+        /* Tabs Styling */
+        [data-testid="stTabs"] [data-baseweb="tab-list"] {
+            background: rgba(15, 23, 42, 0.65) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 12px !important;
+            padding: 4px 6px !important;
+            gap: 6px !important;
+            margin-bottom: 22px !important;
         }
+
+        [data-testid="stTabs"] [data-baseweb="tab"] {
+            border-radius: 8px !important;
+            padding: 8px 18px !important;
+            color: #94a3b8 !important;
+            font-weight: 600 !important;
+            font-size: 13.5px !important;
+            border: none !important;
+            background: transparent !important;
+            transition: all 0.2s ease !important;
+        }
+
+        [data-testid="stTabs"] [data-baseweb="tab"]:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        [data-testid="stTabs"] [aria-selected="true"] {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        [data-testid="stTabs"] [data-baseweb="tab-border"] {
+            display: none !important;
+        }
+
+        [data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+            display: none !important;
+        }
+
+        /* Primary and Secondary Buttons */
+        .stButton > button[kind="primary"],
+        .stForm .stButton > button[kind="primary"] {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 10px 20px !important;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .stButton > button[kind="primary"]:hover,
+        .stForm .stButton > button[kind="primary"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 22px rgba(99, 102, 241, 0.55) !important;
+            filter: brightness(1.1) !important;
+        }
+
+        .stButton > button[kind="secondary"],
+        .stButton > button {
+            background: rgba(30, 41, 59, 0.7) !important;
+            color: #e2e8f0 !important;
+            font-weight: 600 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 10px !important;
+            padding: 9px 18px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .stButton > button:hover {
+            background: rgba(51, 65, 85, 0.85) !important;
+            border-color: rgba(99, 102, 241, 0.4) !important;
+            transform: translateY(-1px) !important;
+            color: #ffffff !important;
+        }
+
+        /* Inputs, Selectboxes, DateInputs */
+        [data-testid="stTextInput"] input,
+        [data-testid="stNumberInput"] input,
+        [data-testid="stDateInput"] input,
+        [data-testid="stTextArea"] textarea {
+            background-color: rgba(15, 23, 42, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 10px !important;
+            color: #f8fafc !important;
+            font-size: 14px !important;
+            padding: 10px 14px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        [data-testid="stTextInput"] input:focus,
+        [data-testid="stNumberInput"] input:focus,
+        [data-testid="stDateInput"] input:focus,
+        [data-testid="stTextArea"] textarea:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+            background-color: rgba(15, 23, 42, 0.95) !important;
+        }
+
+        [data-baseweb="select"] > div {
+            background-color: rgba(15, 23, 42, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 10px !important;
+            color: #f8fafc !important;
+        }
+
+        /* Container Border Styling */
+        [data-testid="stVerticalBlockBorderWrapper"] > div {
+            background: rgba(17, 24, 39, 0.65) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 14px !important;
+            backdrop-filter: blur(12px) !important;
+            padding: 18px 22px !important;
+        }
+
+        /* Headings */
+        h1 {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.8px !important;
+            font-size: 28px !important;
+            margin-bottom: 6px !important;
+        }
+
+        h2 {
+            color: #f8fafc !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.5px !important;
+        }
+
+        h3 {
+            color: #e2e8f0 !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.3px !important;
+        }
+
+        /* Badges */
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .badge-issued {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .badge-expired {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        /* Hide Streamlit default decoration */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
         </style>
         """,
         unsafe_allow_html=True,
@@ -445,146 +413,160 @@ def init_session():
         st.session_state.authenticated = False
     if "user_data" not in st.session_state:
         st.session_state.user_data = None
+    if "cookies" not in st.session_state:
+        st.session_state.cookies = {}
+    if "page" not in st.session_state:
+        st.session_state.page = "Dashboard"
 
 
 def login_user(username, password):
+    if not username.strip() or not password:
+        st.warning("Please enter your username and password.")
+        return
+
     try:
         response = requests.post(
-            f"{auth_url}/login", json={"username": username, "password": password}
+            f"{AUTH_URL}/login",
+            json={"username": username.strip().lower(), "password": password},
+            timeout=8,
         )
-        if response.status_code == 200:
+        try:
+            data = response.json()
+        except Exception:
+            data = {}
+
+        if response.status_code == 200 and data.get("status") == "success":
             st.session_state.cookies = response.cookies.get_dict()
             st.session_state.authenticated = True
-            st.session_state.user_data = response.json().get("data", {})
-            st.success("Login Successful")
+            st.session_state.user_data = data.get("data", {})
+            st.toast("Login Successful!", icon="🎉")
             st.rerun()
         else:
-            st.error(response.text)
+            err = data.get("message") or response.text or "Invalid username or password"
+            st.error(f"Login failed: {err}")
+    except requests.exceptions.ConnectionError:
+        st.error(
+            f"Cannot connect to the backend server at `{BASE_URL}`. "
+            "Please ensure `python app.py` is running."
+        )
     except Exception as e:
-        st.error(f"Connection error: {e}")
+        st.error(f"Login error: {e}")
 
 
 def register_user(username, name, password, role):
-    payload = {"username": username, "name": name, "password": password, "role": role}
-    try:
-        response = requests.post(f"{auth_url}/register", json=payload)
+    if not username.strip() or not name.strip() or not password:
+        st.warning("Please fill in all registration fields.")
+        return
 
-        if response.status_code in [200, 201]:
-            st.success("Registration Successful! Please Login.")
+    payload = {
+        "username": username.strip().lower(),
+        "name": name.strip(),
+        "password": password,
+        "role": role,
+    }
+
+    try:
+        response = requests.post(f"{AUTH_URL}/register", json=payload, timeout=8)
+        try:
+            data = response.json()
+        except Exception:
+            data = {}
+
+        if response.status_code in [200, 201] and data.get("status") != "error":
+            st.success("Registration successful! You can now log in.")
         else:
-            try:
-                st.error(response.json().get("message", "Registration failed"))
-            except Exception:
-                st.error(response.text)
+            err = data.get("message") or response.text or "Registration failed."
+            st.error(f"Registration failed: {err}")
     except requests.exceptions.ConnectionError:
-        st.error(
-            "Cannot connect to the server. Please ensure the backend API is running"
-        )
+        st.error("Cannot connect to backend server. Make sure `python app.py` is running.")
     except Exception as e:
-        st.error(f"Connection Error: {e}")
+        st.error(f"Registration error: {e}")
 
 
 def logout():
     st.session_state.authenticated = False
-    st.session_state.user_data = {}
+    st.session_state.user_data = None
+    st.session_state.cookies = {}
+    st.session_state.page = "Dashboard"
     st.rerun()
 
 
 def auth_page():
-    st.markdown(
-        """
-        <div class="library-logo">
-            <div class="library-title">Library System</div>
-            <div class="library-subtitle">Secure Access Portal</div>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+    col_l, col_m, col_r = st.columns([1, 1.4, 1])
 
-    tab1, tab2 = st.tabs(["Login", "Register"])
+    with col_m:
+        st.markdown(
+            """
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="width: 58px; height: 58px; margin: 0 auto 14px; border-radius: 16px; background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%); display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);">
+                    📚
+                </div>
+                <h1 style="font-size: 28px; font-weight: 800; margin: 0; background: linear-gradient(135deg, #ffffff 40%, #c7d2fe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Lumina LMS</h1>
+                <p style="color: #94a3b8; font-size: 14px; margin-top: 4px; font-weight: 500;">Next-Gen Library Intelligence & Circulation</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    with tab1:
-        with st.form("login_form"):
+        with st.container(border=True):
+            tab1, tab2 = st.tabs(["🔐 Sign In", "✨ Create Account"])
+
+            with tab1:
+                with st.form("login_form"):
+                    st.markdown("<p style='font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 12px;'>Welcome Back</p>", unsafe_allow_html=True)
+                    user_inp = st.text_input("Username", placeholder="e.g. admin", key="log_user")
+                    pass_inp = st.text_input(
+                        "Password", type="password", placeholder="••••••••", key="log_pass"
+                    )
+                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                    submit_btn = st.form_submit_button("Sign In to Portal", use_container_width=True, type="primary")
+
+                    if submit_btn:
+                        login_user(user_inp, pass_inp)
+
+            with tab2:
+                with st.form("register_form"):
+                    st.markdown("<p style='font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 12px;'>Register New Administrator</p>", unsafe_allow_html=True)
+                    name_inp = st.text_input("Full Name", placeholder="e.g. Alex Morgan", key="reg_name")
+                    user_reg = st.text_input("Username", placeholder="e.g. amorgan", key="reg_user")
+                    pass_reg = st.text_input(
+                        "Password", type="password", placeholder="Minimum 6 characters", key="reg_pass"
+                    )
+                    role_reg = st.selectbox(
+                        "Administrative Role", ["admin", "superadmin"], key="reg_role"
+                    )
+                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                    reg_btn = st.form_submit_button("Create Account", use_container_width=True, type="primary")
+
+                    if reg_btn:
+                        register_user(user_reg, name_inp, pass_reg, role_reg)
+
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        try:
+            r = requests.get(f"{BASE_URL}/swagger", timeout=2)
+            if r.status_code in [200, 308, 404]:
+                st.markdown(
+                    f"<div style='text-align:center;'><span class='badge-pill badge-active'>● Live Backend</span> <span style='font-size:12px; color:#64748b;'>port 5501</span></div>",
+                    unsafe_allow_html=True,
+                )
+        except Exception:
             st.markdown(
-                '<div class="gradient-subheader">Welcome Back</div>',
+                f"<div style='text-align:center;'><span class='badge-pill badge-expired'>● Backend Offline</span> <span style='font-size:12px; color:#64748b;'>Run python app.py</span></div>",
                 unsafe_allow_html=True,
             )
-            username = st.text_input(
-                "Username", placeholder="Enter Username", key="login_user_key"
-            )
-            password = st.text_input(
-                "Password",
-                type="password",
-                placeholder="••••••••",
-                key="login_pass_key",
-            )
-            login_btn = st.form_submit_button("Login")
-
-            if login_btn:
-                if not username or not password:
-                    st.warning("Please fill all fields")
-                else:
-                    login_user(username, password)
-
-    with tab2:
-        with st.form("register_form"):
-            st.markdown(
-                '<div class="gradient-subheader">Create Account</div>',
-                unsafe_allow_html=True,
-            )
-
-            name = st.text_input("Full Name")
-            username = st.text_input("Username", key="reg_user_key")
-            password = st.text_input(
-                "Password",
-                type="password",
-                placeholder="Minimum 6 characters",
-                key="reg_pass_key",
-            )
-            role = st.selectbox(
-                "Organizational Role", ["admin", "superadmin"], key="reg_role_key"
-            )
-
-            register_btn = st.form_submit_button("Register")
-
-            if register_btn:
-                if not name or not username or not password:
-                    st.warning("Please fill all fields")
-                else:
-                    register_user(username, name, password, role)
 
 
-def dashboard():
-    st.markdown("<h1>Library Management System</h1>", unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gradient-subheader">Dashboard Overview</div>',
-        unsafe_allow_html=True,
-    )
-
-    user_info = st.session_state.user_data or {}
-
-    st.markdown(
-        f"""
-        <div class="glass-card">
-            <div class="category-title">User Details</div>
-            <p style="margin: 0; padding-bottom: 5px;">Welcome, <strong style="color: #ffffff;">{user_info.get('name', 'User')}</strong></p>
-            <p style="margin: 0;">Role: <strong style="color: #a5b4fc; text-transform: capitalize;">{user_info.get('role', 'N/A')}</strong></p>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    if st.button("Logout", key="logout_btn"):
-        logout()
-
-
-# ----------------- App Execution ----------------- #
-apply_custom_style()
+# ---------------- EXECUTION ----------------
+apply_simple_style()
 init_session()
 
 if not st.session_state.authenticated:
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        auth_page()
+    auth_page()
 else:
-    show_dashboard()
+    import importlib
+    import home_ui
+
+    importlib.reload(home_ui)
+    home_ui.show_dashboard(logout_callback=logout)
+

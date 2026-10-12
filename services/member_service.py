@@ -261,6 +261,7 @@ def search_member(**kwargs):
                 "id": members.id,
                 "name": members.name,
                 "phone": members.phone_no,
+                "phone_no": members.phone_no,
                 "address": members.address,
                 "membership": data,
             }
@@ -276,7 +277,7 @@ def update_member(member_id, data):
             return error_response("member not found")
 
         member.name = data.get("name", member.name)
-        member.phone_no = data.get("phone no", member.phone_no)
+        member.phone_no = data.get("phone_no") or data.get("phone no") or data.get("phone") or member.phone_no
         member.address = data.get("address", member.address)
 
         db.session.commit()

@@ -63,6 +63,7 @@ def login(data):
             "Login Successful",
             {
                 "id": current_user.id,
+                "name": current_user.name,
                 "username": current_user.username,
                 "role": current_user.role,
             },

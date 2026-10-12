@@ -89,8 +89,12 @@ def update(book_id, data):
         Book.publishes_year = data.get("publishes_year", Book.publishes_year)
         Book.created_at = data.get("created_at", Book.created_at)
 
-        if "created_at" in data:
-            Book.created_at = datetime.strptime(data["created_at"], "%Y-%m-%d").date()
+        if "created_at" in data and data["created_at"]:
+            if isinstance(data["created_at"], str):
+                try:
+                    Book.created_at = datetime.strptime(data["created_at"], "%Y-%m-%d").date()
+                except Exception:
+                    pass
 
         db.session.commit()
         return success_response("Book information updated")
@@ -124,8 +128,11 @@ def search_book(**kwargs):
                     "author": Books.author,
                     "category": Books.category,
                     "quantity": Books.quantity,
+                    "available_quantity": Books.available_quantity,
                     "Book available quantity": Books.available_quantity,
+                    "publishes_year": Books.publishes_year,
                     "publishes year": Books.publishes_year,
+                    "created_at": str(Books.created_at) if Books.created_at else None,
                     "created at": str(Books.created_at) if Books.created_at else None,
                 }
             )
